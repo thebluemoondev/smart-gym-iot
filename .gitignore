@@ -1,0 +1,91 @@
+# =========================
+# PYTHON
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# ENV & CONFIG (QUAN TRỌNG)
+# =========================
+.env
+.env.*
+*.env
+
+# =========================
+# DATABASE
+# =========================
+*.db
+*.sqlite3
+
+# =========================
+# LOGS
+# =========================
+*.log
+logs/
+
+# =========================
+# TEST / COVERAGE
+# =========================
+.coverage
+htmlcov/
+.pytest_cache/
+
+# =========================
+# IDE / EDITOR
+# =========================
+
+# VSCode
+.vscode/
+
+# PyCharm
+.idea/
+
+# =========================
+# OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# DOCKER
+# =========================
+docker-compose.override.yml
+*.pid
+
+# =========================
+# BUILD / DIST
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# CACHE
+# =========================
+.cache/
+
+# =========================
+# NODE (nếu có n8n / frontend)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# MISC
+# =========================
+*.swp
+*.swo
+
+cloudflare
+cloudflare-*.log
