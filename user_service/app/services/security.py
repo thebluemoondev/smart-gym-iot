@@ -5,6 +5,7 @@ Chức năng chính:
     Cung cấp các hàm xử lý bảo mật liên quan đến mật khẩu:
         - Băm mật khẩu (hash password)
         - Xác minh mật khẩu (verify password)
+        - Tạo JWT token
 
 Mô tả module:
     Module sử dụng thư viện passlib với thuật toán bcrypt để đảm bảo
@@ -20,52 +21,66 @@ Ngày cập nhật gần nhất: <5/6/2026>
 """
 
 from passlib.context import CryptContext
+from jose import jwt
+from datetime import datetime, timedelta
 
 # Cấu hình context để băm mật khẩu với thuật toán bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Cấu hình JWT
+SECRET_KEY = "smartgym_secret_key_change_in_production"  # Thay đổi trong production
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
 
 def hash_password(password: str) -> str:
     """
-    Tên hàm:
-        hash_password
-
-    Mô tả:
-        Băm mật khẩu dạng plain text thành dạng mã hóa an toàn.
-
-    Tham số:
-        password (str):
-            Mật khẩu gốc do người dùng nhập.
-
-    Giá trị trả về:
-        str:
-            Chuỗi mật khẩu đã được băm bằng bcrypt.
-
-    Ghi chú:
-        Mật khẩu sau khi băm sẽ được lưu vào database thay vì mật khẩu gốc.
+    Băm mật khẩu dạng plain text thành dạng mã hóa an toàn.
     """
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    Tên hàm:
-        verify_password
-
-    Mô tả:
-        Xác minh mật khẩu người dùng nhập vào có khớp với mật khẩu đã băm hay không.
-
-    Tham số:
-        plain_password (str):
-            Mật khẩu người dùng nhập.
-        hashed_password (str):
-            Mật khẩu đã được băm lưu trong database.
-
-    Giá trị trả về:
-        bool:
-            True nếu mật khẩu đúng, False nếu sai.
-
-    Ghi chú:
-        Hàm sử dụng cơ chế so sánh an toàn của bcrypt, không giải mã mật khẩu.
+    Xác minh mật khẩu người dùng nhập vào có khớp với mật khẩu đã băm hay không.
     """
     return pwd_context.verify(plain_password, hashed_password)
+
+
+def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
+    """
+    Tạo JWT token cho người dùng.
+
+    Args:
+        data: Dict chứa thông tin cần mã hóa trong token (vd: {"sub": username, "user_id": id})
+        expires_delta: Thời gian hết hạn của token (mặc định 30 phút)
+
+    Returns:
+        Chuỗi JWT token
+    """
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def decode_access_token(token: str) -> dict:
+    """
+    Giải mã JWT token.
+
+    Args:
+        token: Chuỗi JWT token
+
+    Returns:
+        Dict chứa thông tin trong token
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except Exception:
+        return None

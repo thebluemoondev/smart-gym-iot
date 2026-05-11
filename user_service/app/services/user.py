@@ -5,7 +5,8 @@ Chức năng chính:
     Cung cấp các dịch vụ (service) để quản lý người dùng:
         - Lấy danh sách người dùng
         - Lấy thông tin theo ID / username
-        - Tạo mới người dùng
+        - Tạo mới người dùng (đăng ký)
+        - Đăng nhập
         - Cập nhật thông tin
         - Xóa người dùng
         - Tìm kiếm người dùng
@@ -27,18 +28,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models import user as model
 from app.schemas import user as schema
-from app.services.security import hash_password
+from app.services.security import hash_password, verify_password, create_access_token
 
 
 def get_all_users(db: Session):
     """
     Lấy toàn bộ danh sách người dùng.
-
-    Args:
-        db (Session): Kết nối database.
-
-    Returns:
-        List[User]: Danh sách tất cả người dùng.
     """
     return db.query(model.User).all()
 
@@ -46,35 +41,26 @@ def get_all_users(db: Session):
 def get_user(id: int, db: Session):
     """
     Lấy thông tin người dùng theo ID.
-
-    Args:
-        id (int): ID người dùng.
-        db (Session): Kết nối database.
-
-    Returns:
-        User | None: Người dùng nếu tìm thấy, ngược lại None.
     """
     return db.query(model.User).filter(model.User.id == id).first()
 
 
 def create_user(user: schema.CreateUser, db: Session):
     """
-    Tạo người dùng mới.
-
-    Args:
-        user (CreateUser): Dữ liệu người dùng.
-        db (Session): Kết nối database.
-
-    Returns:
-        User: Người dùng vừa tạo.
+    Tạo người dùng mới (đăng ký).
     """
     hashed_pwd = hash_password(user.password)
 
     new_user = model.User(
-        name=user.name,
         username=user.username,
         password=hashed_pwd,
-        phonenumber=user.phonenumber
+        name=user.full_name or user.name,
+        email=user.email,
+        phonenumber=user.phone or user.phonenumber,
+        full_name=user.full_name,
+        date_of_birth=user.date_of_birth,
+        gender=user.gender,
+        address=user.address
     )
 
     db.add(new_user)
@@ -87,13 +73,6 @@ def create_user(user: schema.CreateUser, db: Session):
 def delete_user(id: int, db: Session):
     """
     Xóa người dùng theo ID.
-
-    Args:
-        id (int): ID người dùng.
-        db (Session): Kết nối database.
-
-    Returns:
-        User | None: Người dùng đã xóa hoặc None nếu không tồn tại.
     """
     user = db.query(model.User).filter(model.User.id == id).first()
     if not user:
@@ -107,14 +86,6 @@ def delete_user(id: int, db: Session):
 def update_user(id: int, user: schema.UpdateUser, db: Session):
     """
     Cập nhật thông tin người dùng.
-
-    Args:
-        id (int): ID người dùng.
-        user (UpdateUser): Dữ liệu cần cập nhật.
-        db (Session): Kết nối database.
-
-    Returns:
-        User | None: Người dùng đã cập nhật hoặc None nếu không tồn tại.
     """
     db_user = get_user(id, db)
     if not db_user:
@@ -136,13 +107,6 @@ def update_user(id: int, user: schema.UpdateUser, db: Session):
 def get_user_by_username(username: str, db: Session):
     """
     Lấy người dùng theo username.
-
-    Args:
-        username (str): Tên đăng nhập.
-        db (Session): Kết nối database.
-
-    Returns:
-        User | None: Người dùng nếu tìm thấy, ngược lại None.
     """
     return db.query(model.User).filter(model.User.username == username).first()
 
@@ -150,17 +114,61 @@ def get_user_by_username(username: str, db: Session):
 def search_users(db: Session, query: str):
     """
     Tìm kiếm người dùng theo tên hoặc số điện thoại.
-
-    Args:
-        db (Session): Kết nối database.
-        query (str): Từ khóa tìm kiếm.
-
-    Returns:
-        List[User]: Danh sách người dùng phù hợp.
     """
     return db.query(model.User).filter(
         or_(
             model.User.name.contains(query),
-            model.User.phonenumber.contains(query)
+            model.User.full_name.contains(query),
+            model.User.phonenumber.contains(query),
+            model.User.phone.contains(query)
         )
     ).all()
+
+
+def authenticate_user(username: str, password: str, db: Session):
+    """
+    Xác thực người dùng đăng nhập.
+
+    Args:
+        username: Tên đăng nhập
+        password: Mật khẩu
+        db: Session database
+
+    Returns:
+        User nếu đăng nhập thành công, None nếu thất bại
+    """
+    user = get_user_by_username(username, db)
+    if not user:
+        return None
+
+    if not verify_password(password, user.password):
+        return None
+
+    return user
+
+
+def login_user(user: schema.LoginRequest, db: Session):
+    """
+    Đăng nhập người dùng và trả về token.
+
+    Args:
+        user: Thông tin đăng nhập
+        db: Session database
+
+    Returns:
+        Dict chứa token và thông tin user nếu thành công
+        None nếu thất bại
+    """
+    authenticated_user = authenticate_user(user.username, user.password, db)
+
+    if not authenticated_user:
+        return None
+
+    # Tạo JWT token
+    access_token = create_access_token(data={"sub": authenticated_user.username, "user_id": authenticated_user.id})
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": authenticated_user
+    }

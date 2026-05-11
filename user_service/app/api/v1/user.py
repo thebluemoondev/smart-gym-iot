@@ -4,11 +4,13 @@ Module User API
 Định nghĩa các endpoint liên quan đến hội viên (User):
 - CRUD hội viên
 - Tìm kiếm hội viên
+- Đăng nhập
+- Đăng ký
 
 Sử dụng trong FastAPI Router.
 
 Tác giả: thebluemoondev
-Cập nhật cuối: 9:58 06/05/2025
+Cập nhật cuối: 11/05/2026
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -42,6 +44,88 @@ ERROR_400 = {
     }
 }
 
+ERROR_401 = {
+    "description": "Thông tin đăng nhập không đúng",
+    "content": {
+        "application/json": {
+            "example": {"detail": "Tên đăng nhập hoặc mật khẩu không đúng"}
+        }
+    }
+}
+
+
+# ==================== AUTH ENDPOINTS ====================
+
+@router.post(
+    "/register",
+    response_model=user_schema.UserOut,
+    status_code=status.HTTP_201_CREATED,
+    responses={400: ERROR_400},
+    summary="Đăng ký tài khoản mới",
+    description="Tạo tài khoản hội viên mới.",
+    operation_id="register_user"
+)
+def register(user: user_schema.CreateUser, db: Session = Depends(get_db)):
+    """
+    Đăng ký tài khoản hội viên mới.
+
+    Tham số:
+        user (CreateUser): Thông tin đăng ký
+        db (Session): Session database
+
+    Trả về:
+        UserOut: Thông tin user vừa tạo
+
+    Ngoại lệ:
+        HTTPException 400: Nếu username đã tồn tại
+    """
+    # Kiểm tra username đã tồn tại chưa
+    db_user = user_service.get_user_by_username(user.username, db)
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tên đăng nhập đã tồn tại"
+        )
+
+    # Tạo user mới
+    new_user = user_service.create_user(user, db)
+    return new_user
+
+
+@router.post(
+    "/login",
+    response_model=user_schema.LoginResponse,
+    responses={401: ERROR_401},
+    summary="Đăng nhập",
+    description="Đăng nhập vào hệ thống, trả về JWT token.",
+    operation_id="login_user"
+)
+def login(credentials: user_schema.LoginRequest, db: Session = Depends(get_db)):
+    """
+    Đăng nhập vào hệ thống.
+
+    Tham số:
+        credentials (LoginRequest): Tên đăng nhập và mật khẩu
+        db (Session): Session database
+
+    Trả về:
+        LoginResponse: Token và thông tin user
+
+    Ngoại lệ:
+        HTTPException 401: Nếu tên đăng nhập hoặc mật khẩu không đúng
+    """
+    result = user_service.login_user(credentials, db)
+
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Tên đăng nhập hoặc mật khẩu không đúng"
+        )
+
+    return result
+
+
+# ==================== CRUD ENDPOINTS ====================
 
 @router.get(
     "/search",
@@ -121,13 +205,13 @@ def read_user(id: int, db: Session = Depends(get_db)):
     response_model=user_schema.UserOut,
     status_code=status.HTTP_201_CREATED,
     responses={400: ERROR_400},
-    summary="Đăng ký hội viên mới",
-    description="Tạo hồ sơ hội viên mới.",
-    operation_id="register_member"
+    summary="Đăng ký hội viên mới (Admin)",
+    description="Tạo hồ sơ hội viên mới (dùng cho admin).",
+    operation_id="create_member"
 )
 def create_new_user(user: user_schema.CreateUser, db: Session = Depends(get_db)):
     """
-    Đăng ký hội viên mới.
+    Đăng ký hội viên mới (dùng cho admin).
 
     Kiểm tra username trước khi tạo.
 
@@ -207,10 +291,11 @@ def delete_existing_user(id: int, db: Session = Depends(get_db)):
         )
     return None
 
-import httpx  # Thư viện để gọi API giữa các Service
-from fastapi import APIRouter, Depends, HTTPException
 
-# Giả sử bạn đã có các hàm lấy DB và Service
+# ==================== ACCESS CHECK ====================
+
+import httpx
+
 @router.get("/access-check/{card_uid}", summary="Kiểm tra quyền vào cửa")
 async def access_check(card_uid: str, db: Session = Depends(get_db)):
     # BƯỚC 1: Kiểm tra thẻ trong DB nội bộ của User Service
@@ -221,7 +306,6 @@ async def access_check(card_uid: str, db: Session = Depends(get_db)):
     user_id = rfid_card.user_id
 
     # BƯỚC 2: Gọi sang Membership Service (Dùng URL nội bộ Docker)
-    # Lưu ý: 'membership_service' là tên container trong docker-compose
     membership_url = f"http://membership_service:6002/api/v1/subscriptions/active/{user_id}"
 
     async with httpx.AsyncClient() as client:
@@ -229,7 +313,7 @@ async def access_check(card_uid: str, db: Session = Depends(get_db)):
             response = await client.get(membership_url)
             if response.status_code == 200:
                 data = response.json()
-                if data: # Nếu có gói tập active
+                if data:  # Nếu có gói tập active
                     return {
                         "access": True,
                         "user_id": user_id,
@@ -239,5 +323,4 @@ async def access_check(card_uid: str, db: Session = Depends(get_db)):
             return {"access": False, "message": "Hội viên chưa mua gói hoặc gói đã hết hạn"}
 
         except Exception:
-            # Nếu Membership Service sập, vẫn báo lỗi để bảo mật
             return {"access": False, "message": "Lỗi xác thực gói tập (Server Down)"}
