@@ -13,4 +13,4 @@ class WorkoutDetail(Base):
     weight = Column(Float)
 
     plan = relationship("WorkoutPlan", back_populates="details")
-    exercise = relationship("Exercise", back_populates="plan_details")
+    exercise = relationship("Exercise")

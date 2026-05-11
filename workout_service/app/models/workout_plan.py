@@ -11,5 +11,4 @@ class WorkoutPlan(Base):
     name = Column(Unicode(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    # Quan hệ với bảng chi tiết bài tập
     details = relationship("WorkoutDetail", back_populates="plan", cascade="all, delete-orphan")
