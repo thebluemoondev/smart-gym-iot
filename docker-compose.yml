@@ -61,6 +61,27 @@ services:
       - facility_service
     networks:
       - gym_network
+  chatbot_service:
+    build: ./chatbot_service
+    container_name: gym_chatbot_app
+    ports:
+      - "6005:6005"
+    volumes:
+      - ./chatbot_service:/app
+    env_file: ./chatbot_service/.env
+    environment:
+      # Sử dụng tên service làm host để các container tự nhận diện nhau
+      - USER_SERVICE_URL=http://user_service:6001
+      - MEMBERSHIP_SERVICE_URL=http://membership_service:6002
+      - WORKOUT_SERVICE_URL=http://workout_service:6003
+      - FACILITY_SERVICE_URL=http://facility_service:6004
+    networks:
+      - gym_network
+    depends_on:
+      - user_service
+      - membership_service
+      - workout_service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 6005 --reload
 
 networks:
   gym_network:
