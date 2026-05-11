@@ -5,8 +5,8 @@ from typing import Optional
 class SubscriptionBase(BaseModel):
     user_id: int
     package_id: int
-    start_date: date
-    end_date: date
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     status: Optional[str] = "active"
 
 class SubscriptionCreate(SubscriptionBase):

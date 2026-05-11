@@ -59,3 +59,12 @@ def read_all_subscriptions(
     db: Session = Depends(get_db)
 ):
     return sub_service.get_all_subscriptions(db, skip=skip, limit=limit)
+
+@router.get("/active/{user_id}", summary="Kiểm tra gói tập đang hoạt động")
+def check_active_subscription(user_id: int, db: Session = Depends(get_db)):
+    subscription = sub_service.get_active_subscription_by_user(db, user_id)
+
+    if not subscription:
+        return None # Hoặc trả về thông báo tùy bạn
+
+    return subscription
