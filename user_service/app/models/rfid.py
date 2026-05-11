@@ -15,7 +15,7 @@ Tác giả: trungtranjqk
 Cập nhật cuối: 09:59 06/05/2026
 """
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 
@@ -52,7 +52,7 @@ class RFIDCard(Base):
         unique=True,
         nullable=False
     )
-
+    is_active = Column(Boolean, default=True)
     # Quan hệ với bảng User
     # back_populates="rfid_card" liên kết với thuộc tính bên User model
     user = relationship("User", back_populates="rfid_card")

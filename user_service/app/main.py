@@ -6,7 +6,7 @@ app = FastAPI(
     title="GYM User Service",
     docs_url="/docs",
     openapi_url="/openapi.json",
-    version="1.0.0",
+    version="1.0.1",
     root_path="/users"
 )
 

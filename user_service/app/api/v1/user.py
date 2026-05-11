@@ -17,6 +17,7 @@ from typing import List
 from app.db.database import get_db
 from app.services import user as user_service
 from app.schemas import user as user_schema
+from app.services import rfid as rfid_service
 
 router = APIRouter(
     tags=["Quản lý Hội viên (Members)"]
@@ -205,3 +206,38 @@ def delete_existing_user(id: int, db: Session = Depends(get_db)):
             detail="Hội viên không tồn tại hoặc đã bị xóa"
         )
     return None
+
+import httpx  # Thư viện để gọi API giữa các Service
+from fastapi import APIRouter, Depends, HTTPException
+
+# Giả sử bạn đã có các hàm lấy DB và Service
+@router.get("/access-check/{card_uid}", summary="Kiểm tra quyền vào cửa")
+async def access_check(card_uid: str, db: Session = Depends(get_db)):
+    # BƯỚC 1: Kiểm tra thẻ trong DB nội bộ của User Service
+    rfid_card = rfid_service.get_rfid_by_uid(db, card_uid)
+    if not rfid_card or not rfid_card.is_active:
+        return {"access": False, "message": "Thẻ không tồn tại hoặc đã bị khóa"}
+
+    user_id = rfid_card.user_id
+
+    # BƯỚC 2: Gọi sang Membership Service (Dùng URL nội bộ Docker)
+    # Lưu ý: 'membership_service' là tên container trong docker-compose
+    membership_url = f"http://membership_service:6002/api/v1/subscriptions/active/{user_id}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(membership_url)
+            if response.status_code == 200:
+                data = response.json()
+                if data: # Nếu có gói tập active
+                    return {
+                        "access": True,
+                        "user_id": user_id,
+                        "message": "Chào mừng hội viên! Mời vào."
+                    }
+
+            return {"access": False, "message": "Hội viên chưa mua gói hoặc gói đã hết hạn"}
+
+        except Exception:
+            # Nếu Membership Service sập, vẫn báo lỗi để bảo mật
+            return {"access": False, "message": "Lỗi xác thực gói tập (Server Down)"}
