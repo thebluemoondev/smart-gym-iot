@@ -31,12 +31,9 @@ USE membership_service;
 GO
 -- Xóa subscriptions trước (vì có FK đến packages)
 DELETE FROM subscriptions;
--- Xóa products (nếu bảng đã được tạo)
--- DELETE FROM products;
 -- Xóa gym_packages
-DELETE FROM gym_packages
+DELETE FROM gym_packages;
 DBCC CHECKIDENT ('subscriptions', RESEED, 0);
--- DBCC CHECKIDENT ('products', RESEED, 0);
 DBCC CHECKIDENT ('gym_packages', RESEED, 0);
 PRINT 'Membership Service: Reset complete';
 GO
@@ -70,19 +67,13 @@ GO
 USE user_service;
 GO
 
--- Tạo tài khoản admin với username: admin, password: admin, phonenumber: 000000000
-INSERT INTO users (username, name, password, phonenumber, role)
-VALUES ('admin', 'Administrator', 'admin', '000000000', 'admin');
+-- Tạo user admin (username: admin, password: admin - đã mã hóa bcrypt)
+-- Password hash: $2b$12$4R9gX5aPDFuM36l.Zfc4ROGSuZuUAP6ZodgSPo1k8E6nd9RjX/wZG (admin)
+INSERT INTO users (username, name, password, phonenumber, role) VALUES
+('admin', 'Quản trị viên', '$2b$12$4R9gX5aPDFuM36l.Zfc4ROGSuZuUAP6ZodgSPo1k8E6nd9RjX/wZG', '0900000001', 'admin');
 GO
 
--- Xác nhận tài khoản đã tạo
-SELECT id, username, name, phonenumber, role FROM users WHERE role = 'admin';
+PRINT 'Admin account created: admin / admin';
 GO
 
-PRINT '========== RESET HOÀN TẤT ==========';
-PRINT 'Tài khoản admin đã được tạo:';
-PRINT '  - Username: admin';
-PRINT '  - Password: admin';
-PRINT '  - Phonenumber: 000000000';
-PRINT '  - Role: admin';
-GO
+

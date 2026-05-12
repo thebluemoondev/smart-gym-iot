@@ -8,25 +8,6 @@
 USE user_service;
 GO
 
--- Tạo users mẫu
-INSERT INTO users (username, name, password, phonenumber, role) VALUES
-('user1', 'Nguyễn Văn A', '123456', '0912345678', 'user'),
-('user2', 'Trần Thị B', '123456', '0912345679', 'user'),
-('user3', 'Lê Văn C', '123456', '0912345680', 'user'),
-('user4', 'Phạm Thị D', '123456', '0912345681', 'user'),
-('user5', 'Hoàng Văn E', '123456', '0912345682', 'user');
-GO
-
--- Tạo RFID cards mẫu
-INSERT INTO rfid_cards (card_uid, user_id, is_active) VALUES
-('A1B2C3D4', 1, 1),
-('E5F6G7H8', 2, 1),
-('I9J0K1L2', 3, 1);
-GO
-
-PRINT 'User Service: Data loaded';
-GO
-
 -- =============================================================
 -- 2. MEMBERSHIP SERVICE - Dữ liệu gói tập và sản phẩm
 -- =============================================================
@@ -35,11 +16,11 @@ GO
 
 -- Tạo gym_packages (gói tập)
 INSERT INTO gym_packages (name, price, package_desc, duration_days) VALUES
-('Basic', 299000, 'Gói tập cơ bản', 30),
-('VIP', 499000, 'Gói tập VIP', 30),
-('Premium', 799000, 'Gói tập Premium', 90),
-('Gold', 1500000, 'Gói tập Gold', 180),
-('Platinum', 2500000, 'Gói tập Platinum', 365);
+(N'Basic', 299000, N'Gói tập cơ bản', 30),
+(N'VIP', 499000, N'Gói tập VIP', 30),
+(N'Premium', 799000, N'Gói tập Premium', 90),
+(N'Gold', 1500000, N'Gói tập Gold', 180),
+(N'Platinum', 2500000, N'Gói tập Platinum', 365);
 GO
 
 -- Tạo products (sản phẩm bán lẻ)
@@ -131,12 +112,12 @@ USE facility_service;
 GO
 
 -- Tạo gym_areas (khu vực)
-INSERT INTO gym_areas (name, capacity, description, is_active) VALUES
-(N'Khu vực tạ', 20, N'Khu vực tập tạ tự do', 1),
-(N'Khu vực máy', 30, N'Khu vực máy tập', 1),
-(N'Khu vực cardio', 25, N'Khu vực chạy bộ, đạp xe', 1),
-(N'Khu vực yoga', 15, N'Khu vực yoga, pilates', 1),
-(N'Khu vực boxing', 10, N'Khu vực đấm bốc', 1);
+INSERT INTO gym_areas (name, capacity, description) VALUES
+(N'Khu vực tạ', 20, N'Khu vực tập tạ tự do'),
+(N'Khu vực máy', 30, N'Khu vực máy tập'),
+(N'Khu vực cardio', 25, N'Khu vực chạy bộ, đạp xe'),
+(N'Khu vực yoga', 15, N'Khu vực yoga, pilates'),
+(N'Khu vực boxing', 10, N'Khu vực đấm bốc');
 GO
 
 -- Tạo equipment (thiết bị)
