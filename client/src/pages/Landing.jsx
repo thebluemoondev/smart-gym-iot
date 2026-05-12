@@ -384,6 +384,7 @@ export default function Landing() {
               <h4 className="font-semibold mb-4">Liên kết nhanh</h4>
               <ul className="space-y-2 text-gray-400">
                 <li><Link to="/packages" className="hover:text-gymgreen-500">Gói tập</Link></li>
+                <li><Link to="/products" className="hover:text-gymgreen-500">Cửa hàng</Link></li>
                 <li><Link to="/login" className="hover:text-gymgreen-500">Đăng nhập</Link></li>
                 <li><Link to="/register" className="hover:text-gymgreen-500">Đăng ký</Link></li>
               </ul>
