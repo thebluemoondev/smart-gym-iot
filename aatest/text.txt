@@ -1,0 +1,28 @@
+# Smart Gym - Project Structure
+
+## Services
+1. user_service (port 6001) - User management, authentication, RFID
+2. membership_service (port 6002) - Packages, subscriptions, products
+3. workout_service (port 6003) - Exercises, workout plans, history
+4. facility_service (port 6004) - Equipment, areas, maintenance
+5. chatbot_service (port 6005) - AI chatbot
+6. payment_service (port 6006) - Payment with VPBank QR
+
+## Frontend
+- client (port 3000) - React + Tailwind CSS
+
+## API Gateway
+- apigateway (port 80) - Nginx routing
+
+## Database
+- SQL Server with 5 databases: user_service, membership_service, workout_service, facility_service, payment_service
+
+## Admin Scripts
+- adb/check.sql - Check all data
+- adb/reset.sql - Reset and create admin
+- adb/data.sql - Insert sample data
+
+## Default Admin Account
+- Username: admin
+- Password: admin
+- Phone: 000000000

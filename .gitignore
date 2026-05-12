@@ -87,5 +87,12 @@ yarn-error.log*
 *.swp
 *.swo
 
+# Temporary JS files (project root and adb)
+*.js
+!*.config.js
+!vite.config.js
+!tailwind.config.js
+!postcss.config.js
+
 cloudflare
 cloudflare-*.log
