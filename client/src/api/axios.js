@@ -27,11 +27,23 @@ export const chatbotAPI = axios.create({
   baseURL: `${API_BASE}/chatbot`,
 })
 
-// Request interceptor
-userAPI.interceptors.request.use((config) => {
+// Payment Service - endpoints: /create, /callback, /order/{order_id}, /user/{user_id}, /methods
+export const paymentAPI = axios.create({
+  baseURL: `${API_BASE}/payment`,
+})
+
+// Request interceptor - Add auth token to all API calls
+const addAuthToken = (config) => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
-})
+}
+
+userAPI.interceptors.request.use(addAuthToken)
+membershipAPI.interceptors.request.use(addAuthToken)
+workoutAPI.interceptors.request.use(addAuthToken)
+facilityAPI.interceptors.request.use(addAuthToken)
+chatbotAPI.interceptors.request.use(addAuthToken)
+paymentAPI.interceptors.request.use(addAuthToken)
