@@ -1,40 +1,52 @@
--- CREATE DATABASE facility_service;
--- GO
+-- =============================================================
+-- FACILITY SERVICE - CREATE DATABASE AND TABLES
+-- =============================================================
 
--- USE facility_service;
--- GO
+USE facility_service;
+GO
 
--- -- 1. Danh mục thiết bị (Máy chạy, tạ đơn, máy kéo cáp...)
--- CREATE TABLE equipment
--- (
---     id INT IDENTITY(1,1) PRIMARY KEY,
---     name NVARCHAR(255) NOT NULL,
---     category NVARCHAR(100), -- Cardio, Strength, Recovery
---     status NVARCHAR(50) DEFAULT 'operational', -- operational, under_repair, broken
---     purchase_date DATE,
---     last_maintenance DATE
--- );
+-- 1. Drop existing tables (if exists)
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'maintenance_logs')
+    DROP TABLE maintenance_logs;
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'equipment')
+    DROP TABLE equipment;
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'gym_areas')
+    DROP TABLE gym_areas;
+GO
 
--- -- 2. Nhật ký bảo trì thiết bị
--- CREATE TABLE maintenance_logs
--- (
---     id INT IDENTITY(1,1) PRIMARY KEY,
---     equipment_id INT NOT NULL,
---     maintenance_date DATETIME DEFAULT GETDATE(),
---     description NVARCHAR(500),
---     cost INT DEFAULT 0,
---     performed_by NVARCHAR(255),
---     FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE
--- );
+-- 2. Create tables
+-- Equipment (danh mục thiết bị)
+CREATE TABLE equipment (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    category NVARCHAR(100),
+    status NVARCHAR(50) DEFAULT 'operational',
+    purchase_date DATE,
+    last_maintenance DATE
+);
+GO
 
--- -- 3. Thông tin khu vực phòng tập (Phòng Yoga, Khu tạ nặng, Phòng thay đồ)
--- CREATE TABLE gym_areas
--- (
---     id INT IDENTITY(1,1) PRIMARY KEY,
---     name NVARCHAR(255) NOT NULL,
---     capacity INT,
---     description NVARCHAR(500)
--- );
+-- Maintenance Logs (nhật ký bảo trì)
+CREATE TABLE maintenance_logs (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    equipment_id INT NOT NULL,
+    maintenance_date DATETIME DEFAULT GETDATE(),
+    description NVARCHAR(500),
+    cost INT DEFAULT 0,
+    performed_by NVARCHAR(255),
+    FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE
+);
+GO
 
--- CREATE INDEX IX_equipment_status ON equipment(status);
--- GO
+-- Gym Areas (khu vực phòng tập)
+CREATE TABLE gym_areas (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    capacity INT,
+    description NVARCHAR(500)
+);
+GO
+
+-- Index
+CREATE INDEX IX_equipment_status ON equipment(status);
+GO

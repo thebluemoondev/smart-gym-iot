@@ -88,3 +88,5 @@ client/package-lock.json
 # Cloudflare
 cloudflare/id.txt
 cloudflare/*.log
+
+memory/*
