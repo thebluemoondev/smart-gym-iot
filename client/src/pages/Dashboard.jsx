@@ -69,7 +69,7 @@ export default function Dashboard() {
           packages: Array.isArray(packagesRes.data) ? packagesRes.data.length : 0,
           exercises: Array.isArray(exercisesRes.data) ? exercisesRes.data.length : 0,
           equipment: Array.isArray(equipmentRes.data) ? equipmentRes.data.length : 0,
-          activeSubscriptions: Array.isArray(subsRes.data) ? subsRes.data.filter(s => s.is_active).length : 0
+          activeSubscriptions: Array.isArray(subsRes.data) ? subsRes.data.filter(s => s.status === 'active').length : 0
         })
       } catch (error) {
         console.error('Error fetching dashboard data:', error)

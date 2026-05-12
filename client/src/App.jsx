@@ -30,6 +30,7 @@ import CustomerMySubscription from './pages/CustomerMySubscription'
 import CustomerWorkoutPlan from './pages/CustomerWorkoutPlan'
 import CustomerWorkoutHistory from './pages/CustomerWorkoutHistory'
 import CustomerChatbot from './pages/CustomerChatbot'
+import CustomerRegisterPackage from './pages/CustomerRegisterPackage'
 
 // Auth Context
 const AuthContext = React.createContext(null)
@@ -91,7 +92,7 @@ function App() {
             <ProtectedRoute user={user}><CustomerProfile /></ProtectedRoute>
           } />
           <Route path="/customer/subscription" element={
-            <ProtectedRoute user={user}><CustomerMySubscription /></ProtectedRoute>
+            <ProtectedRoute user={user}><CustomerRegisterPackage /></ProtectedRoute>
           } />
           <Route path="/customer/workout-plan" element={
             <ProtectedRoute user={user}><CustomerWorkoutPlan /></ProtectedRoute>
@@ -235,6 +236,13 @@ function AdminLayout({ children }) {
             <div className="w-9 h-9 bg-gradient-to-r from-primary-500 to-gymgreen-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
               {user?.name?.[0] || user?.full_name?.[0] || 'A'}
             </div>
+            <button
+              onClick={() => { logout(); navigate('/') }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-dark-700 text-gray-400 hover:text-red-400 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-sm">Đăng xuất</span>
+            </button>
           </div>
         </header>
         <main className="flex-1 p-6">{children}</main>

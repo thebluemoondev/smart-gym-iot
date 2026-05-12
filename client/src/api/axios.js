@@ -47,3 +47,19 @@ workoutAPI.interceptors.request.use(addAuthToken)
 facilityAPI.interceptors.request.use(addAuthToken)
 chatbotAPI.interceptors.request.use(addAuthToken)
 paymentAPI.interceptors.request.use(addAuthToken)
+
+// Response interceptor - KHÔNG tự động logout user khi gặp lỗi 401
+// Chỉ logout khi user chủ động click nút logout
+// Nếu token hết hạn, để user tiếp tục sử dụng và hiển thị thông báo khi cần
+const handleAuthError = (error) => {
+  // Không làm gì cả với lỗi 401 - không logout tự động
+  // User sẽ tự động logout khi thử làm gì đó cần auth hoặc click nút logout
+  return Promise.reject(error)
+}
+
+userAPI.interceptors.response.use(null, handleAuthError)
+membershipAPI.interceptors.response.use(null, handleAuthError)
+workoutAPI.interceptors.response.use(null, handleAuthError)
+facilityAPI.interceptors.response.use(null, handleAuthError)
+chatbotAPI.interceptors.response.use(null, handleAuthError)
+paymentAPI.interceptors.response.use(null, handleAuthError)

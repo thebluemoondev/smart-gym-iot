@@ -32,8 +32,8 @@ export default function CustomerChatbot() {
     setLoading(true)
 
     try {
-      const res = await chatbotAPI.post('/chat', { message: userMsg, user_id: user?.id })
-      setMessages(prev => [...prev, { role: 'assistant', content: res.data.response || 'Xin lỗi, tôi chưa hiểu. Bạn thử hỏi khác nhé!' }])
+      const res = await chatbotAPI.post('/message', { user_id: user?.id, message: userMsg })
+      setMessages(prev => [...prev, { role: 'assistant', content: res.data.answer || 'Xin lỗi, tôi chưa hiểu. Bạn thử hỏi khác nhé!' }])
     } catch (e) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Xin lỗi, đã có lỗi xảy ra. Bạn thử lại sau nhé!' }])
     } finally {

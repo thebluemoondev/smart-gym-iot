@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, ArrowRight, Star, Zap, ShoppingCart, X, Heart, Shield, Clock, Award, Sparkles, Flame, Crown, ChevronRight } from 'lucide-react'
-import { membershipAPI } from '../api/axios'
+import { Check, ArrowRight, Star, Zap, ShoppingCart, X, Heart, Shield, Clock, Award, Sparkles, Flame, Crown, ChevronRight, Building2, QrCode } from 'lucide-react'
+import { membershipAPI, paymentAPI } from '../api/axios'
 import { useAuth } from '../App'
 
 // Shopping Cart Component
@@ -43,7 +43,7 @@ function Cart({ cart, setCart, onCheckout }) {
 }
 
 // Package Card Component
-function PackageCard({ pkg, onAddToCart, isInCart }) {
+function PackageCard({ pkg, onAddToCart, isInCart, onBuyNow }) {
   const [isHovered, setIsHovered] = useState(false)
 
   const packageIcons = {
@@ -147,7 +147,7 @@ function PackageCard({ pkg, onAddToCart, isInCart }) {
             </>
           ) : (
             <>
-              <ShoppingCart className="w-5 h-5" /> Đăng ký ngay
+              <ShoppingCart className="w-5 h-5" /> Mua ngay
             </>
           )}
         </button>
@@ -165,6 +165,13 @@ export default function CustomerPackages({ user: propUser }) {
   const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(true)
   const [cart, setCart] = useState([])
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [selectedPackage, setSelectedPackage] = useState(null)
+  const [paymentLoading, setPaymentLoading] = useState(false)
+  const [paymentResult, setPaymentResult] = useState(null)
+  const [discountCode, setDiscountCode] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [selectedMethod, setSelectedMethod] = useState('bank_transfer')
 
   useEffect(() => {
     membershipAPI.get('/packages/').then(r => {
@@ -192,12 +199,24 @@ export default function CustomerPackages({ user: propUser }) {
 
   const isInCart = (pkgId) => cart.some(i => i.id === pkgId)
 
-  const handleCheckout = () => {
+  const handleBuyNow = (pkg) => {
     if (!user) {
-      navigate('/login', { state: { from: '/packages', cart } })
+      navigate('/login', { state: { from: '/packages', package: pkg } })
       return
     }
-    navigate('/customer/subscription', { state: { package: cart[0] } })
+    setSelectedPackage(pkg)
+    setShowPaymentModal(true)
+  }
+
+  const handleCheckout = () => {
+    if (!user) {
+      navigate('/login', { state: { from: '/packages' } })
+      return
+    }
+    if (cart.length > 0) {
+      setSelectedPackage(cart[0])
+      setShowPaymentModal(true)
+    }
   }
 
   const benefits = [
