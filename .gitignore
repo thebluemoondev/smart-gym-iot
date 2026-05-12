@@ -6,8 +6,6 @@ __pycache__/
 *.pyo
 *.pyd
 *.so
-
-# Virtual environment
 .venv/
 venv/
 env/
@@ -42,11 +40,7 @@ htmlcov/
 # =========================
 # IDE / EDITOR
 # =========================
-
-# VSCode
 .vscode/
-
-# PyCharm
 .idea/
 
 # =========================
@@ -74,12 +68,16 @@ dist/
 .cache/
 
 # =========================
-# NODE (nếu có n8n / frontend)
+# NODE
 # =========================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+client/node_modules/
+client/.vite/
+client/dist/
+client/package-lock.json
 
 # =========================
 # MISC
@@ -87,16 +85,6 @@ yarn-error.log*
 *.swp
 *.swo
 
-# Temporary JS files (project root and adb)
-*.js
-!*.config.js
-!vite.config.js
-!tailwind.config.js
-!postcss.config.js
-
-# Client source (exclude to hide JS from GitHub stats)
-client/src/
-client/public/
-
-cloudflare
-cloudflare-*.log
+# Cloudflare
+cloudflare/id.txt
+cloudflare/*.log

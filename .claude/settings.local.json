@@ -4,7 +4,12 @@
       "Bash(docker compose *)",
       "Bash(curl -s http://localhost/api/users/login -X POST -H \"Content-Type: application/json\" -d '{\"username\":\"test\",\"password\":\"test\"}')",
       "Bash(curl *)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(git add *)",
+      "Bash(git config *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git status *)"
     ]
   }
 }
