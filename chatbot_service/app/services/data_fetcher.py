@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://user_service:6001")
 MEMBERSHIP_SERVICE_URL = os.getenv("MEMBERSHIP_SERVICE_URL", "http://membership_service:6002")
 WORKOUT_SERVICE_URL = os.getenv("WORKOUT_SERVICE_URL", "http://workout_service:6003")
-FACILITY_SERVICE_URL = os.getenv("FACILITY_SERVICE_URL", "http://facility_service:6004")
 
 async def get_gym_context(user_id: int):
     """Tổng hợp dữ liệu từ các service để làm ngữ cảnh cho AI"""
@@ -24,7 +23,7 @@ async def get_gym_context(user_id: int):
 
         try:
             # 1. Lấy tên User
-            u_res = await client.get(f"{USER_SERVICE_URL}/api/v1/user/{user_id}")
+            u_res = await client.get(f"{USER_SERVICE_URL}/api/v1/users/{user_id}")
             if u_res.status_code == 200:
                 context["user_name"] = u_res.json().get("name", "Hội viên")
 
@@ -39,14 +38,18 @@ async def get_gym_context(user_id: int):
             if w_res.status_code == 200 and w_res.json():
                 context["workout"] = str(w_res.json())
 
-            # 4. Lấy danh sách tất cả gói tập để AI tư vấn
-            p_res = await client.get(f"{FACILITY_SERVICE_URL}/api/v1/packages/")
+            # 4. Lấy danh sách tất cả gói tập từ Membership Service
+            p_res = await client.get(f"{MEMBERSHIP_SERVICE_URL}/api/v1/packages/")
             if p_res.status_code == 200:
                 pkgs = p_res.json()
-                pkg_info = [f"- {p.get('name')}: {p.get('price')} VNĐ" for p in pkgs]
-                context["all_packages"] = "\n".join(pkg_info)
+                if isinstance(pkgs, list) and len(pkgs) > 0:
+                    pkg_info = [f"- {p.get('name')}: {p.get('price') if p.get('price') else 'Liên hệ' } VNĐ/ {p.get('duration_days')} ngày" for p in pkgs]
+                    context["all_packages"] = "\n".join(pkg_info)
+                else:
+                    context["all_packages"] = "Liên hệ quầy để biết giá gói tập"
 
         except Exception as e:
             logger.error(f"Fetcher error: {str(e)}")
+            context["all_packages"] = "Hiện tại hệ thống đang bận, bạn có thể gọi điện trực tiếp cho shop nhé!"
 
         return context
