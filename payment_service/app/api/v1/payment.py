@@ -21,12 +21,42 @@ from app.schemas.payment import PaymentOut, PaymentResponse, PaymentCallbackRequ
 router = APIRouter(tags=["Thanh toán (Payment)"])
 
 
+# Mã giảm giá được hỗ trợ
+VALID_DISCOUNT_CODES = {
+    "THANHCHINH": 0,  # Miễn phí 100%
+    "WELCOME50": 50,   # Giảm 50%
+    "GYM25": 25,       # Giảm 25%
+}
+
+
+def apply_discount(amount: float, discount_code: str = None) -> tuple:
+    """
+    Tính toán giảm giá dựa trên mã code
+
+    Args:
+        amount: Số tiền gốc
+        discount_code: Mã giảm giá (optional)
+
+    Returns:
+        tuple: (số tiền sau giảm, mã giảm giá đã áp dụng, % giảm)
+    """
+    if not discount_code or discount_code.upper() not in VALID_DISCOUNT_CODES:
+        return amount, None, 0
+
+    code = discount_code.upper()
+    discount_percent = VALID_DISCOUNT_CODES[code]
+    final_amount = amount * (1 - discount_percent / 100)
+
+    return final_amount, code, discount_percent
+
+
 @router.post("/create", response_model=PaymentResponse, summary="Tạo thanh toán mới")
 def create_payment(
     user_id: int,
     subscription_id: int,
     amount: float,
     payment_method: str,
+    discount_code: str = None,
     db: Session = Depends(get_db)
 ):
     """
@@ -37,6 +67,7 @@ def create_payment(
         subscription_id: ID gói tập cần thanh toán
         amount: Số tiền thanh toán (VND)
         payment_method: Phương thức thanh toán (momo, zalopay, bank_transfer)
+        discount_code: Mã giảm giá (optional) - THANHCHINH, WELCOME50, GYM25
         db: Database session
 
     Returns:
@@ -49,19 +80,40 @@ def create_payment(
     if payment_method not in ["momo", "zalopay", "bank_transfer"]:
         raise HTTPException(status_code=400, detail="Phương thức thanh toán không hỗ trợ")
 
+    # Áp dụng mã giảm giá nếu có
+    final_amount, applied_code, discount_percent = apply_discount(amount, discount_code)
+
     # Chuẩn bị dữ liệu thanh toán
     payment_data = {
         "user_id": user_id,
         "subscription_id": subscription_id,
-        "amount": amount,
+        "amount": final_amount,  # Sử dụng số tiền sau khi giảm giá
         "payment_method": payment_method,
-        "description": f"Thanh toán gói tập #{subscription_id}"
+        "description": f"Thanh toán gói tập #{subscription_id}" + (f" - Giảm {discount_percent}%" if applied_code else "")
     }
 
     # Tạo bản ghi thanh toán trong database
     payment = payment_service.create_payment(db, payment_data)
 
-    # Xử lý thanh toán theo phương thức
+    # Nếu dùng mã giảm giá THANHCHINH -> thanh toán ngay thành công
+    if applied_code == "THANHCHINH":
+        payment_service.update_payment_status(db, payment.order_id, "success", transaction_id=f"DISCOUNT-{applied_code}")
+        payment.status = "success"
+        return PaymentResponse(
+            order_id=payment.order_id,
+            payment_url=None,
+            qr_code=None,
+            qr_code_image=None,
+            bank_info=None,
+            amount=final_amount,
+            original_amount=amount,
+            discount_code=applied_code,
+            discount_percent=discount_percent,
+            status="success",
+            message=f"Thanh toán thành công! Mã giảm giá {applied_code} đã được áp dụng (100%)"
+        )
+
+    # Xử lý thanh toán theo phương thức (bank_transfer, momo, zalopay)
     result = payment_service.process_payment(payment, payment_method)
 
     # Kiểm tra lỗi từ provider
@@ -77,15 +129,23 @@ def create_payment(
         payment.qr_code = result.get("qr_code_image")
     db.commit()
 
+    # Tạo message
+    message = "Tạo thanh toán thành công"
+    if applied_code:
+        message += f" - Mã {applied_code} giảm {discount_percent}%"
+
     return PaymentResponse(
         order_id=payment.order_id,
         payment_url=result.get("payment_url"),
         qr_code=result.get("qr_code"),
         qr_code_image=result.get("qr_code_image"),
         bank_info=result.get("bank_info"),
-        amount=payment.amount,
+        amount=final_amount,
+        original_amount=amount if applied_code else None,
+        discount_code=applied_code,
+        discount_percent=discount_percent if applied_code else None,
         status=payment.status,
-        message="Tạo thanh toán thành công"
+        message=message
     )
 
 

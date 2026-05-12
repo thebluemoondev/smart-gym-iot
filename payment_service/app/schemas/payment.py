@@ -52,6 +52,9 @@ class PaymentResponse(BaseModel):
     qr_code_image: Optional[str] = None
     bank_info: Optional[dict] = None
     amount: float
+    original_amount: Optional[float] = None
+    discount_code: Optional[str] = None
+    discount_percent: Optional[int] = None
     status: str
     message: str
 
