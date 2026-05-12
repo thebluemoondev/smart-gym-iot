@@ -1,0 +1,3 @@
+# Exclude client from GitHub language stats
+client/src/* linguist-vendored
+client/public/* linguist-vendored
