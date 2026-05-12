@@ -10,6 +10,8 @@ function PaymentModal({ package: pkg, user, onClose, onSuccess }) {
   const [paymentResult, setPaymentResult] = useState(null)
   const [selectedMethod, setSelectedMethod] = useState('bank_transfer')
   const [copied, setCopied] = useState(false)
+  const [discountCode, setDiscountCode] = useState('')
+  const [discountApplied, setDiscountApplied] = useState(false)
 
   // Check if user is logged in
   if (!user) {
@@ -36,10 +38,15 @@ function PaymentModal({ package: pkg, user, onClose, onSuccess }) {
           user_id: user.id,
           subscription_id: pkg.id,
           amount: pkg.price,
-          payment_method: selectedMethod
+          payment_method: selectedMethod,
+          discount_code: discountCode || null
         }
       })
       setPaymentResult(res.data)
+      // Nếu có mã giảm giá và thanh toán thành công
+      if (res.data.discount_code && res.data.status === 'success') {
+        setDiscountApplied(true)
+      }
     } catch (e) {
       console.error('Payment error:', e)
       alert('Lỗi tạo thanh toán: ' + (e.response?.data?.detail || e.message))
@@ -80,11 +87,43 @@ function PaymentModal({ package: pkg, user, onClose, onSuccess }) {
               <p className="text-lg font-bold text-gray-800">{pkg.name}</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-primary-600">{pkg.price?.toLocaleString()}đ</p>
+              {paymentResult?.discount_code ? (
+                <>
+                  <p className="text-xl font-bold text-gray-400 line-through">{paymentResult.original_amount?.toLocaleString()}đ</p>
+                  <p className="text-2xl font-bold text-primary-600">{paymentResult.amount?.toLocaleString()}đ</p>
+                  <span className="text-xs bg-gymgreen-100 text-gymgreen-600 px-2 py-1 rounded-full">Đã áp dụng: {paymentResult.discount_code}</span>
+                </>
+              ) : (
+                <p className="text-2xl font-bold text-primary-600">{pkg.price?.toLocaleString()}đ</p>
+              )}
               <p className="text-sm text-gray-500">{pkg.duration_days} ngày</p>
             </div>
           </div>
         </div>
+
+        {/* Discount Code Input */}
+        {!paymentResult && (
+          <div className="p-4 border-b">
+            <p className="font-medium text-gray-700 mb-2">Mã giảm giá</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={discountCode}
+                onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                placeholder="Nhập mã giảm giá"
+                className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl text-gray-800 focus:border-primary-500 focus:outline-none"
+              />
+              <button
+                onClick={createPayment}
+                disabled={loading}
+                className="px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50"
+              >
+                Áp dụng
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">Ví dụ: THANHCHINH (Miễn phí), WELCOME50 (50%), GYM25 (25%)</p>
+          </div>
+        )}
 
         {/* Payment Method */}
         <div className="p-4">
