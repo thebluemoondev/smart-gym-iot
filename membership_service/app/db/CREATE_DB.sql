@@ -31,3 +31,33 @@
 -- -- Tạo chỉ mục để tìm kiếm nhanh theo user_id
 -- CREATE INDEX IX_subscriptions_user_id ON subscriptions(user_id);
 -- GO
+
+-- -- 3. Bảng sản phẩm (Products)
+-- CREATE TABLE products
+-- (
+--     id INT IDENTITY(1,1) PRIMARY KEY,
+--     name NVARCHAR(255) NOT NULL,
+--     description NVARCHAR(MAX),
+--     price FLOAT NOT NULL,
+--     original_price FLOAT,
+--     category NVARCHAR(50) NOT NULL,
+--     image_url NVARCHAR(500),
+--     stock INT DEFAULT 0,
+--     is_active BIT DEFAULT 1,
+--     is_featured BIT DEFAULT 0,
+--     created_at DATETIME DEFAULT GETDATE(),
+--     updated_at DATETIME DEFAULT GETDATE()
+-- );
+-- GO
+
+-- -- Thêm dữ liệu mẫu sản phẩm
+-- INSERT INTO products (name, description, price, original_price, category, stock, is_featured) VALUES
+-- (N'Whey Protein Isolate', N'Thuốc tăng cơ cao cấp, hấp thụ nhanh', 450000, 500000, 'supplement', 50, 1),
+-- (N'Creatine Monohydrate', N'Tăng sức mạnh và năng lượng', 250000, NULL, 'supplement', 100, 0),
+-- (N'Găng tay Gym', N'Găng tay bảo vệ cổ tay, chống trượt', 85000, 100000, 'accessory', 200, 1),
+-- (N'Thái dụng cụ tập', N'Bộ thái từ 5kg-20kg', 350000, 400000, 'equipment', 30, 0),
+-- (N'Áo thun Gym', N'Áo thoáng khí, co giãn tốt', 150000, NULL, 'wear', 80, 0),
+-- (N'Tạ tay 5kg', N'Tạ tay đôi 5kg mỗi quả', 280000, NULL, 'equipment', 25, 1),
+-- (N'Bình nước 1L', N'Bình nước cá nhân', 50000, 60000, 'accessory', 150, 0),
+-- (N'Thuốc tăng cơ Mass', N'Gain weight nhanh', 520000, 600000, 'supplement', 40, 1);
+-- GO
