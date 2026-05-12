@@ -78,6 +78,23 @@ services:
       - workout_service
     command: uvicorn app.main:app --host 0.0.0.0 --port 6005 --reload
 
+  payment_service:
+    build: ./payment_service
+    container_name: gym_payment_app
+    ports:
+      - "6006:6006"
+    volumes:
+      - ./payment_service:/app
+    env_file: ./payment_service/.env
+    networks:
+      - gym_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - user_service
+      - membership_service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 6006 --reload
+
   # Client - React Frontend
   client:
     build:

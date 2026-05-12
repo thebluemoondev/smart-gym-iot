@@ -10,6 +10,7 @@ import {
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import CustomerProducts from './pages/CustomerProducts'
 import Dashboard from './pages/Dashboard'
 import UsersPage from './pages/UsersPage'
 import RFIDPage from './pages/RFIDPage'
@@ -78,6 +79,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/packages" element={<CustomerPackages user={user} />} />
+          <Route path="/products" element={<CustomerProducts />} />
 
           {/* Customer Routes */}
           <Route path="/customer" element={
