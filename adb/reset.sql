@@ -33,11 +33,11 @@ GO
 DELETE FROM subscriptions;
 -- Xóa products (nếu bảng đã được tạo)
 -- DELETE FROM products;
--- Xóa packages (tên bảng đúng theo model)
-DELETE FROM packages;
+-- Xóa gym_packages
+DELETE FROM gym_packages
 DBCC CHECKIDENT ('subscriptions', RESEED, 0);
 -- DBCC CHECKIDENT ('products', RESEED, 0);
-DBCC CHECKIDENT ('packages', RESEED, 0);
+DBCC CHECKIDENT ('gym_packages', RESEED, 0);
 PRINT 'Membership Service: Reset complete';
 GO
 
