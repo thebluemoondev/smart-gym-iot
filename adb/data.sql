@@ -78,17 +78,17 @@ USE workout_service;
 GO
 
 -- Tạo exercises (bài tập)
-INSERT INTO exercises (name, description, muscle_group, difficulty, equipment_required) VALUES
-(N'Nâng tạ đôi', N'Bài tập vai', 'shoulders', 'beginner', 'dumbbell'),
-(N'Ngồi xổm', N'Bài tập chân', 'legs', 'beginner', 'none'),
-(N'Đẩy người', N'Bài tập ngực', 'chest', 'beginner', 'none'),
-(N'Kéo xà', N'Bài tập lưng', 'back', 'intermediate', 'barbell'),
-(N'Gập bụng', N'Bài tập bụng', 'abs', 'beginner', 'none'),
-(N'Plank', N'Bài tập core', 'core', 'beginner', 'none'),
-(N'Deadlift', N'Bài tập toàn thân', 'full_body', 'advanced', 'barbell'),
-(N'Bench Press', N'Bài tập ngực', 'chest', 'intermediate', 'barbell'),
-(N'Bicep Curl', N'Bài tập tay trước', 'arms', 'beginner', 'dumbbell'),
-(N'Tricep Extension', N'Bài tập tay sau', 'arms', 'beginner', 'dumbbell');
+INSERT INTO exercises (name, description, muscle_group) VALUES
+(N'Nâng tạ đôi', N'Bài tập vai', 'shoulders'),
+(N'Ngồi xổm', N'Bài tập chân', 'legs'),
+(N'Đẩy người', N'Bài tập ngực', 'chest'),
+(N'Kéo xà', N'Bài tập lưng', 'back'),
+(N'Gập bụng', N'Bài tập bụng', 'abs'),
+(N'Plank', N'Bài tập core', 'core'),
+(N'Deadlift', N'Bài tập toàn thân', 'full_body'),
+(N'Bench Press', N'Bài tập ngực', 'chest'),
+(N'Bicep Curl', N'Bài tập tay trước', 'arms'),
+(N'Tricep Extension', N'Bài tập tay sau', 'arms');
 GO
 
 -- Tạo workout_plans (kế hoạch tập)

@@ -9,6 +9,9 @@ class WorkoutPlan(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, nullable=False) # Khóa logic sang User Service
     name = Column(Unicode(255), nullable=False)
+    description = Column(Unicode(500))  # Mô tả kế hoạch
+    duration_weeks = Column(Integer)     # Thời gian (tuần)
+    exercises_json = Column(Unicode(1000))  # JSON chứa danh sách bài tập
     created_at = Column(DateTime, default=datetime.utcnow)
 
     details = relationship("WorkoutDetail", back_populates="plan", cascade="all, delete-orphan")
