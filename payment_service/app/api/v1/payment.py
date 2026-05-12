@@ -14,6 +14,8 @@ Author: Smart Gym Team
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import json
+import httpx
 from app.db.database import get_db
 from app.services import payment as payment_service
 from app.schemas.payment import PaymentOut, PaymentResponse, PaymentCallbackRequest
@@ -235,4 +237,66 @@ def get_payment_methods():
             {"id": "zalopay", "name": "ZaloPay", "description": "Thanh toán qua ZaloPay"},
             {"id": "bank_transfer", "name": "Chuyển khoản", "description": "Quét QR chuyển khoản ngân hàng"}
         ]
+    }
+
+
+@router.post("/confirm-cash", summary="Xác nhận thanh toán tiền mặt/QR")
+async def confirm_cash_payment(
+    order_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Xác nhận thanh toán khi nhận tiền mặt hoặc quét QR thành công
+    Dùng cho trường hợp thu tiền trực tiếp tại quầy
+
+    Args:
+        order_id: Mã đơn hàng cần xác nhận
+        db: Database session
+
+    Returns:
+        dict: Kết quả xác nhận
+    """
+    payment = payment_service.get_payment_by_order_id(db, order_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Không tìm thấy thanh toán")
+
+    if payment.status == "success":
+        return {"status": "success", "message": "Thanh toán đã được xác nhận trước đó", "order_id": order_id}
+
+    # Cập nhật trạng thái thành công
+    payment_service.update_payment_status(
+        db, order_id, "success",
+        transaction_id=f"CASH-{order_id}",
+        callback_data=json.dumps({"confirmed_by": "admin", "method": "cash_qr"})
+    )
+
+    # Nếu có subscription_id, tự động tạo subscription
+    if payment.subscription_id:
+        try:
+            async with httpx.AsyncClient() as client:
+                sub_response = await client.post(
+                    "http://membership_service:6002/api/v1/subscriptions/",
+                    json={
+                        "user_id": payment.user_id,
+                        "package_id": payment.subscription_id
+                    }
+                )
+                if sub_response.status_code == 201:
+                    subscription_data = sub_response.json()
+                    return {
+                        "status": "success",
+                        "message": "Xác nhận thanh toán và kích hoạt gói tập thành công!",
+                        "order_id": order_id,
+                        "amount": payment.amount,
+                        "subscription_id": subscription_data.get("id"),
+                        "subscription_end": subscription_data.get("end_date")
+                    }
+        except Exception:
+            pass
+
+    return {
+        "status": "success",
+        "message": "Xác nhận thanh toán thành công!",
+        "order_id": order_id,
+        "amount": payment.amount
     }

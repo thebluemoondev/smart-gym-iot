@@ -1,5 +1,6 @@
 # app/main.py
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import test_connection
 from app.api.v1.router import api_router
 
@@ -7,6 +8,20 @@ app = FastAPI(
     title="Payment Service",
     description="API thanh toán - Momo, ZaloPay, QR Ngân hàng",
     version="1.0.0"
+)
+
+# CORS configuration - Allow frontend (localhost:3000 and production)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost",
+        "http://127.0.0.1",
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 @app.on_event("startup")
