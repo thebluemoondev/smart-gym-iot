@@ -17,8 +17,8 @@ GO
 USE membership_service;
 GO
 PRINT '========== MEMBERSHIP SERVICE ==========';
-SELECT '--- TABLE: gym_packages ---' AS [Status];
-SELECT id, name, price, package_desc, duration_days FROM gym_packages;
+SELECT '--- TABLE: packages ---' AS [Status];
+SELECT id, name, price, package_desc, duration_days FROM packages;
 
 SELECT '--- TABLE: subscriptions ---' AS [Status];
 SELECT * FROM subscriptions;

@@ -33,8 +33,8 @@ GO
 USE membership_service;
 GO
 
--- Tạo gym_packages (gói tập)
-INSERT INTO gym_packages (name, price, package_desc, duration_days) VALUES
+-- Tạo packages (gói tập)
+INSERT INTO packages (name, price, package_desc, duration_days) VALUES
 ('Basic', 299000, 'Gói tập cơ bản', 30),
 ('VIP', 499000, 'Gói tập VIP', 30),
 ('Premium', 799000, 'Gói tập Premium', 90),

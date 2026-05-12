@@ -29,12 +29,15 @@ GO
 -- 1.3 Membership Service
 USE membership_service;
 GO
+-- Xóa subscriptions trước (vì có FK đến packages)
 DELETE FROM subscriptions;
-DELETE FROM products;
-DELETE FROM gym_packages;
+-- Xóa products (nếu bảng đã được tạo)
+-- DELETE FROM products;
+-- Xóa packages (tên bảng đúng theo model)
+DELETE FROM packages;
 DBCC CHECKIDENT ('subscriptions', RESEED, 0);
-DBCC CHECKIDENT ('products', RESEED, 0);
-DBCC CHECKIDENT ('gym_packages', RESEED, 0);
+-- DBCC CHECKIDENT ('products', RESEED, 0);
+DBCC CHECKIDENT ('packages', RESEED, 0);
 PRINT 'Membership Service: Reset complete';
 GO
 
