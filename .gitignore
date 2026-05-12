@@ -90,3 +90,5 @@ cloudflare/id.txt
 cloudflare/*.log
 
 memory/*
+test/*
+.claude/*

@@ -9,7 +9,13 @@
       "Bash(git config *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(git status *)"
+      "Bash(git status *)",
+      "PowerShell(python -c \"import bcrypt; print\\(bcrypt.hashpw\\(b'123456', bcrypt.gensalt\\(\\)\\).decode\\(\\)\\)\")",
+      "PowerShell(python -c \"import bcrypt; print\\(bcrypt.hashpw\\(b'admin', bcrypt.gensalt\\(\\)\\).decode\\(\\)\\)\")",
+      "Bash(dir /s /b F:\\\\docker_server\\\\*_service\\\\app\\\\main.py)",
+      "Bash(docker-compose down *)",
+      "Bash(docker-compose up *)",
+      "Bash(npm run *)"
     ]
   }
 }
