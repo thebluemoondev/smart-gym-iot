@@ -9,8 +9,6 @@ services:
     env_file: ./user_service/.env
     networks:
       - gym_network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     command: uvicorn app.main:app --host 0.0.0.0 --port 6001 --reload
 
   membership_service:
@@ -23,8 +21,6 @@ services:
     env_file: ./membership_service/.env
     networks:
       - gym_network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     command: uvicorn app.main:app --host 0.0.0.0 --port 6002 --reload
 
   workout_service:
@@ -37,8 +33,6 @@ services:
     env_file: ./workout_service/.env
     networks:
       - gym_network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     command: uvicorn app.main:app --host 0.0.0.0 --port 6003 --reload
 
   facility_service:
@@ -51,8 +45,6 @@ services:
     env_file: ./facility_service/.env
     networks:
       - gym_network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     command: uvicorn app.main:app --host 0.0.0.0 --port 6004 --reload
 
   chatbot_service:
@@ -64,14 +56,13 @@ services:
       - ./chatbot_service:/app
     env_file: ./chatbot_service/.env
     environment:
+      # Sử dụng tên Service (key) để Docker tự phân giải IP nội bộ
       - USER_SERVICE_URL=http://user_service:6001
       - MEMBERSHIP_SERVICE_URL=http://membership_service:6002
       - WORKOUT_SERVICE_URL=http://workout_service:6003
       - FACILITY_SERVICE_URL=http://facility_service:6004
     networks:
       - gym_network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       - user_service
       - membership_service
@@ -88,21 +79,16 @@ services:
     env_file: ./payment_service/.env
     networks:
       - gym_network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       - user_service
       - membership_service
     command: uvicorn app.main:app --host 0.0.0.0 --port 6006 --reload
 
-  # Client - React Frontend
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
     container_name: gym_client
-    ports:
-      - "3000:80"
     networks:
       - gym_network
     depends_on:
