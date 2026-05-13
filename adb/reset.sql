@@ -67,13 +67,13 @@ GO
 USE user_service;
 GO
 
--- Tạo user admin (username: admin, password: admin - đã mã hóa bcrypt)
--- Password hash: $2b$12$4R9gX5aPDFuM36l.Zfc4ROGSuZuUAP6ZodgSPo1k8E6nd9RjX/wZG (admin)
+-- Tạo user admin (username: admin, password: admin123 - đã mã hóa bcrypt)
+-- Password hash: $2b$12$ZKZugqcH/TbtOjmDv19Vj.qcJHzdPD4HpKv/kh.k707scuGlNLCr2 (admin123)
 INSERT INTO users (username, name, password, phonenumber, role) VALUES
-('admin', 'Quản trị viên', '$2b$12$4R9gX5aPDFuM36l.Zfc4ROGSuZuUAP6ZodgSPo1k8E6nd9RjX/wZG', '0900000001', 'admin');
+('admin', 'Quản trị viên', '$2b$12$ZKZugqcH/TbtOjmDv19Vj.qcJHzdPD4HpKv/kh.k707scuGlNLCr2', '0900000001', 'admin');
 GO
 
-PRINT 'Admin account created: admin / admin';
+PRINT 'Admin account created: admin / admin123';
 GO
 
 

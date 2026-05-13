@@ -91,4 +91,7 @@ cloudflare/*.log
 
 memory/*
 test/*
+service_test/
 .claude/*
+
+cloudflared-config.yml

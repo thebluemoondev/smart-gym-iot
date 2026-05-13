@@ -24,7 +24,7 @@ def create_user(user: schema.CreateUser, db: Session):
         username=user.username,
         password=hashed_pwd,
         name=user.name,
-        phone=user.phone,
+        phonenumber=user.phone,
         role="user"
     )
     db.add(new_user)
@@ -50,6 +50,8 @@ def update_user(id: int, user: schema.UpdateUser, db: Session):
     for key, value in update_data.items():
         if key == "password":
             setattr(db_user, key, hash_password(value))
+        elif key == "phone":
+            setattr(db_user, "phonenumber", value)
         else:
             setattr(db_user, key, value)
     db.commit()
@@ -62,10 +64,12 @@ def get_user_by_username(username: str, db: Session):
 
 
 def search_users(db: Session, query: str):
+    if not query:
+        return get_all_users(db)
     return db.query(model.User).filter(
         or_(
             model.User.name.contains(query),
-            model.User.phone.contains(query)
+            model.User.phonenumber.contains(query)
         )
     ).all()
 

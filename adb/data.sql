@@ -8,6 +8,14 @@
 USE user_service;
 GO
 
+INSERT INTO users (username, name, password, phonenumber, role) VALUES
+('user01', N'Nguyễn Văn An', '$2b$12$0q.8o6/5a86aLRswtzApfOnqXP0yga8ARKRorC3ScVqbPUvkUDVdm', '0900000002', 'user'),
+('user02', N'Trần Thị Binh', '$2b$12$QdNdpzb0PXg4osiH0awRH.wuiDGq.8AU2WAPBw63N6siVfLNsyVNa', '0900000003', 'user'),
+('user03', N'Lê Văn Cường', '$2b$12$AXhnn6mo2/6APtWuQcjtxuwepDOhxQIRiDegyGU.f90DLovm89lVu', '0900000004', 'user'),
+('user04', N'Phạm Thị Đào', '$2b$12$KqQvjGb08L6yTn6Sz1OEJur3o1NLK7SK./1CzSlflbMQjx05Gqgmi', '0900000005', 'user'),
+('user05', N'Hoàng Văn Em', '$2b$12$PB7O5V60rOMV.yCZKVpPaOqyy81vm6qYb9A4yNr68VH9S35qQEkr.', '0900000006', 'user');
+GO
+
 -- =============================================================
 -- 2. MEMBERSHIP SERVICE - Dữ liệu gói tập và sản phẩm
 -- =============================================================

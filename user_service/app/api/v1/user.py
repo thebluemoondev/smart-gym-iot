@@ -79,8 +79,25 @@ def register(user: user_schema.CreateUser, db: Session = Depends(get_db)):
     Ngoại lệ:
         HTTPException 400: Nếu username đã tồn tại
     """
+    username = user.username.strip()
+    password = user.password.strip()
+    name = user.name.strip() if user.name else None
+    phone = user.phone.strip() if user.phone else None
+
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tên đăng nhập không được để trống"
+        )
+
+    if not password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Mật khẩu không được để trống"
+        )
+
     # Kiểm tra username đã tồn tại chưa
-    db_user = user_service.get_user_by_username(user.username, db)
+    db_user = user_service.get_user_by_username(username, db)
     if db_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -88,6 +105,10 @@ def register(user: user_schema.CreateUser, db: Session = Depends(get_db)):
         )
 
     # Tạo user mới
+    user.username = username
+    user.password = password
+    user.name = name
+    user.phone = phone
     new_user = user_service.create_user(user, db)
     return new_user
 
@@ -148,7 +169,7 @@ def search_users(
     Trả về:
         list[UserOut]: Danh sách hội viên phù hợp.
     """
-    return user_service.search_users(db, query=q)
+    return user_service.search_users(db, query=q or "")
 
 
 @router.get(
@@ -225,12 +246,33 @@ def create_new_user(user: user_schema.CreateUser, db: Session = Depends(get_db))
     Ngoại lệ:
         HTTPException 400: Nếu username đã tồn tại.
     """
-    db_user = user_service.get_user_by_username(user.username, db)
+    username = user.username.strip()
+    password = user.password.strip()
+    name = user.name.strip() if user.name else None
+    phone = user.phone.strip() if user.phone else None
+
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tên đăng nhập không được để trống"
+        )
+
+    if not password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Mật khẩu không được để trống"
+        )
+
+    db_user = user_service.get_user_by_username(username, db)
     if db_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Tên đăng nhập (Username) đã tồn tại"
         )
+    user.username = username
+    user.password = password
+    user.name = name
+    user.phone = phone
     return user_service.create_user(user, db)
 
 
@@ -308,7 +350,7 @@ async def access_check(card_uid: str, db: Session = Depends(get_db)):
     # BƯỚC 2: Gọi sang Membership Service (Dùng URL nội bộ Docker)
     membership_url = f"http://membership_service:6002/api/v1/subscriptions/active/{user_id}"
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=5.0) as client:
         try:
             response = await client.get(membership_url)
             if response.status_code == 200:
@@ -322,5 +364,5 @@ async def access_check(card_uid: str, db: Session = Depends(get_db)):
 
             return {"access": False, "message": "Hội viên chưa mua gói hoặc gói đã hết hạn"}
 
-        except Exception:
+        except httpx.HTTPError:
             return {"access": False, "message": "Lỗi xác thực gói tập (Server Down)"}
