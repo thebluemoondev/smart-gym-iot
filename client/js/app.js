@@ -170,7 +170,7 @@ function shellLayout(content, options = {}) {
     <div class="${isAdmin ? 'app-bg' : ''}">
       ${isAdmin ? `
       <aside class="sidebar ${state.adminMenuOpen ? 'open' : ''}">
-        <div style="padding:24px;border-bottom:1px solid rgba(255,255,255,.08)">
+        <div style="padding:24px;border-bottom:1px solid rgba(148,163,184,.18)">
           <a href="/" data-nav="/" class="brand">
             <span class="brand-badge">D</span>
             <span>Smart Gym</span>
@@ -240,7 +240,7 @@ function renderLanding() {
           <div>
             <div class="badge"><strong>AI</strong><span>Công nghệ tiên tiến</span></div>
             <h1 class="title" style="font-size:clamp(42px,6vw,72px);margin:20px 0 16px">Phòng tập <span style="background:linear-gradient(90deg,#f97316,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent">thông minh</span> cho cuộc sống khỏe mạnh</h1>
-            <p class="muted" style="font-size:18px;max-width:640px;color:#cbd5e1">Trải nghiệm gym hiện đại với công nghệ AI, quản lý thông minh và không gian tập luyện chuyên nghiệp.</p>
+            <p class="muted" style="font-size:18px;max-width:640px;color:#475569">Trải nghiệm gym hiện đại với công nghệ AI, quản lý thông minh và không gian tập luyện chuyên nghiệp.</p>
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px">
               <a class="btn-primary" style="text-decoration:none" data-nav="/register" href="/register">Bắt đầu ngay</a>
               <a class="btn-ghost" style="text-decoration:none" data-nav="/packages" href="/packages">Xem gói tập</a>
@@ -249,7 +249,7 @@ function renderLanding() {
           <div class="dark-card" style="padding:28px;min-height:340px;display:grid;place-items:center">
             <div class="center">
               <div style="font-size:84px">🏋️</div>
-              <div style="margin-top:12px;color:#cbd5e1">Smart Gym Dashboard</div>
+              <div style="margin-top:12px;color:#475569">Smart Gym Dashboard</div>
             </div>
           </div>
         </div>
@@ -348,7 +348,7 @@ function renderLogin() {
           <div>
             <div style="font-size:72px">🏋️</div>
             <h2>Chào mừng trở lại</h2>
-            <p class="muted" style="color:#cbd5e1">Đăng nhập để trải nghiệm phòng tập thông minh</p>
+            <p class="muted" style="color:#475569">Đăng nhập để trải nghiệm phòng tập thông minh</p>
           </div>
         </div>
         <div class="card" style="padding:34px">
@@ -372,7 +372,7 @@ function renderRegister() {
       <div class="container grid two-col" style="align-items:stretch">
         <div class="dark-card" style="padding:42px">
           <h2>Tham gia Smart Gym</h2>
-          <p class="muted" style="color:#cbd5e1">Trở thành hội viên để trải nghiệm các tính năng thông minh</p>
+          <p class="muted" style="color:#475569">Trở thành hội viên để trải nghiệm các tính năng thông minh</p>
         </div>
         <div class="card" style="padding:34px">
           <h1 style="margin-top:0">Đăng ký</h1>
@@ -407,9 +407,9 @@ function renderCustomerDashboard() {
   return shellLayout(`
     <section class="section" style="padding-top:24px">
       <div class="container">
-        <div class="card" style="padding:28px;background:linear-gradient(90deg,#dc2626,#22c55e);color:white;margin-bottom:24px">
+        <div class="card" style="padding:28px;background:linear-gradient(90deg,rgba(220,38,38,.12),rgba(34,197,94,.12));color:#0f172a;margin-bottom:24px">
           <h1 style="margin:0 0 8px">Xin chào, ${escapeHtml(user?.full_name || user?.username || 'bạn')}!</h1>
-          <p style="margin:0;opacity:.9">Hôm nay bạn có kế hoạch tập luyện gì?</p>
+          <p style="margin:0;color:#475569">Hôm nay bạn có kế hoạch tập luyện gì?</p>
         </div>
         <div class="grid four-col" style="margin-bottom:24px">
           ${statCard('0', 'Tổng buổi tập')}
@@ -462,9 +462,9 @@ async function renderPackagesPage(customerMode) {
   const content = `
     <section class="section" style="padding-top:24px">
       <div class="container">
-        <div class="card" style="padding:28px;background:linear-gradient(90deg,#020617,#111827);color:white;margin-bottom:24px">
+        <div class="card" style="padding:28px;background:linear-gradient(90deg,rgba(220,38,38,.1),rgba(34,197,94,.1));color:#0f172a;margin-bottom:24px">
           <h1 style="margin-top:0">${customerMode ? 'Đăng ký gói tập' : 'Chọn gói tập phù hợp'}</h1>
-          <p style="opacity:.85">Chọn gói phù hợp với nhu cầu và ngân sách của bạn</p>
+          <p style="color:#475569">Chọn gói phù hợp với nhu cầu và ngân sách của bạn</p>
         </div>
         <div class="grid three-col">
           ${packages.map(pkg => packageCard(pkg, !!user, customerMode)).join('')}
