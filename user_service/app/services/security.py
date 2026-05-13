@@ -23,12 +23,13 @@ Ngày cập nhật gần nhất: <5/6/2026>
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
+import os
 
 # Cấu hình context để băm mật khẩu với thuật toán bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Cấu hình JWT
-SECRET_KEY = "smartgym_secret_key_change_in_production"  # Thay đổi trong production
+SECRET_KEY = os.getenv("SECRET_KEY", "smartgym_secret_key_change_in_production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

@@ -24,7 +24,7 @@ def create_user(user: schema.CreateUser, db: Session):
         username=user.username,
         password=hashed_pwd,
         name=user.name,
-        phonenumber=user.phone,
+        phone=user.phone,
         role="user"
     )
     db.add(new_user)
@@ -65,7 +65,7 @@ def search_users(db: Session, query: str):
     return db.query(model.User).filter(
         or_(
             model.User.name.contains(query),
-            model.User.phonenumber.contains(query)
+            model.User.phone.contains(query)
         )
     ).all()
 

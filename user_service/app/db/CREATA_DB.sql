@@ -19,7 +19,7 @@ CREATE TABLE users (
     name NVARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    phonenumber VARCHAR(10),
+    phone VARCHAR(10),
     role VARCHAR(10) DEFAULT 'user',
     created_at DATETIME DEFAULT GETDATE()
 );
@@ -38,5 +38,5 @@ GO
 
 -- Indexes
 CREATE INDEX IX_users_username ON users(username);
-CREATE INDEX IX_users_phonenumber ON users(phonenumber);
+CREATE INDEX IX_users_phone ON users(phone);
 GO

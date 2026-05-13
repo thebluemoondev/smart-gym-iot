@@ -19,7 +19,7 @@ class User(Base):
     name = Column(Unicode(255), nullable=True)
     username = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    phonenumber = Column(String(20), nullable=True)
+    phone = Column(String(20), nullable=True)
     role = Column(String(10), default='user')
 
     # Quan hệ 1-1 với RFIDCard
