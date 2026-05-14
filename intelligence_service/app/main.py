@@ -154,9 +154,6 @@ def build_email_html(title: str, message: str) -> str:
         <div style="background:#ffffff;border:1px solid #eef0f4;border-top:none;border-radius:0 0 18px 18px;padding:28px;">
           <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">{html_escape(title)}</div>
           <div style="font-size:15px;line-height:1.7;color:#374151;">{body}</div>
-          <div style="margin-top:24px;padding-top:16px;border-top:1px solid #eef0f4;color:#6b7280;font-size:13px;">
-            Email này được gửi tự động bởi hệ thống quản lý phòng gym thông minh.
-          </div>
         </div>
       </div>
     </div>
@@ -164,69 +161,43 @@ def build_email_html(title: str, message: str) -> str:
 
 
 def build_task_email_template(task: TaskNotificationRequest, user: dict[str, Any]) -> tuple[str, str, str]:
-    display_name = user.get("name") or user.get("username") or f"User #{task.user_id}"
     task_type = (task.task_type or "task").lower()
 
     action_line = ""
     if task.action_label and task.action_path:
-        action_line = f"\nHành động tiếp theo: {task.action_label} ({task.action_path})"
+        action_line = f"\n{task.action_label}: {task.action_path}"
     elif task.action_label:
-        action_line = f"\nHành động tiếp theo: {task.action_label}"
+        action_line = f"\n{task.action_label}"
     elif task.action_path:
-        action_line = f"\nHành động tiếp theo: {task.action_path}"
+        action_line = f"\n{task.action_path}"
 
     templates = {
         "membership": {
             "subject": "Đăng ký gói tập thành công",
             "title": "Đăng ký gói tập",
-            "body": (
-                f"Chào {display_name},\n"
-                f"{task.message}\n\n"
-                f"Gói tập đã được ghi nhận trên hệ thống."
-                f"{action_line}"
-            ),
+            "body": f"{task.message}{action_line}",
         },
         "payment": {
             "subject": "Thanh toán đã được xác nhận",
             "title": "Xác nhận thanh toán",
-            "body": (
-                f"Chào {display_name},\n"
-                f"{task.message}\n\n"
-                f"Thanh toán của bạn đã được xử lý thành công."
-                f"{action_line}"
-            ),
+            "body": f"{task.message}{action_line}",
         },
         "workout": {
             "subject": "Kế hoạch luyện tập đã sẵn sàng",
             "title": "Kế hoạch luyện tập",
-            "body": (
-                f"Chào {display_name},\n"
-                f"{task.message}\n\n"
-                f"Hệ thống đã lưu kế hoạch và sẽ dùng để gợi ý bài tập phù hợp."
-                f"{action_line}"
-            ),
+            "body": f"{task.message}{action_line}",
         },
         "profile": {
             "subject": "Hồ sơ cá nhân đã được cập nhật",
             "title": "Cập nhật hồ sơ",
-            "body": (
-                f"Chào {display_name},\n"
-                f"{task.message}\n\n"
-                f"Hồ sơ của bạn đã được đồng bộ trên hệ thống."
-                f"{action_line}"
-            ),
+            "body": f"{task.message}{action_line}",
         },
     }
 
     template = templates.get(task_type, {
         "subject": "Thông báo từ hệ thống",
         "title": "Thông báo từ hệ thống",
-        "body": (
-            f"Chào {display_name},\n"
-            f"{task.message}\n\n"
-            f"Thông tin này được ghi nhận từ Smart Gym."
-            f"{action_line}"
-        ),
+        "body": f"{task.message}{action_line}",
     })
 
     return build_email_subject(template["subject"]), template["title"], template["body"]
@@ -285,12 +256,7 @@ async def send_task_notification(task: TaskNotificationRequest) -> dict[str, Any
     email_payload = EmailRequest(
         to=email,
         subject=subject,
-        message=(
-            f"{body}\n\n"
-            f"Loại tác vụ: {task.task_type}\n"
-            f"User: {user.get('username') or user.get('name') or task.user_id}\n"
-            f"Phòng gym Smart Gym"
-        ),
+        message=body,
     )
     result = build_email_delivery(email_payload)
     result.update({
