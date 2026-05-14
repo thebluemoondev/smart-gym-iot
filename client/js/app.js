@@ -443,8 +443,7 @@ async function submitRegister(form) {
     username: form.username.value.trim(),
     password: form.password.value.trim(),
     name: form.name.value.trim(),
-    phone: form.phone.value.trim(),
-    avatar_url: form.avatar_url?.value.trim()
+    phone: form.phone.value.trim()
   }
   await api('/api/users/register', {
     method: 'POST',
@@ -689,7 +688,7 @@ function renderRegister() {
           <div class="card plan-highlight" style="margin-top:18px;padding:18px">
             <strong>Hoàn thiện hồ sơ sau đăng ký</strong>
             <div class="muted" style="margin-top:6px">
-              Sau khi tạo tài khoản, vào Hồ sơ cá nhân để cập nhật tên đầy đủ, số điện thoại, ngày sinh và ảnh đại diện.
+              Sau khi tạo tài khoản, vào Hồ sơ cá nhân để kiểm tra tên, số điện thoại, email và ngày sinh. Ảnh đại diện sẽ dùng mặc định của hệ thống.
             </div>
             <div class="grid" style="margin-top:12px">
               <div class="pill green">1. Tạo tài khoản</div>
@@ -704,8 +703,7 @@ function renderRegister() {
             <input class="input" name="username" placeholder="Tên đăng nhập" required autocomplete="username" />
             <input class="input" name="password" type="password" placeholder="Mật khẩu" required autocomplete="new-password" minlength="6" />
             <input class="input" name="name" placeholder="Họ và tên" />
-            <input class="input" name="phone" placeholder="Số điện thoại" />
-            <input class="input" name="avatar_url" placeholder="Link ảnh đại diện (tùy chọn)" />
+            <input class="input" name="phone" placeholder="Số điện thoại" autocomplete="tel" />
             <button class="btn-primary" type="submit">Tạo tài khoản</button>
           </form>
           <p class="muted" style="margin-top:20px">Đã có tài khoản? <a data-nav="/login" href="/login">Đăng nhập</a></p>
@@ -912,7 +910,6 @@ function renderCustomerProfile() {
             <input class="input" name="email" placeholder="Email" value="${escapeAttr(user.email || '')}" />
             <input class="input" name="phone" placeholder="Số điện thoại" value="${escapeAttr(phone)}" />
             <input class="input" name="date_of_birth" type="date" value="${escapeAttr(user.date_of_birth || '')}" />
-            <input class="input" name="avatar_url" placeholder="Link ảnh đại diện (tùy chọn)" value="${escapeAttr(user.avatar_url || user.avatar || '')}" />
             <select class="select" name="gender">
               <option value="male" ${String(user.gender || '').toLowerCase() === 'male' ? 'selected' : ''}>Nam</option>
               <option value="female" ${String(user.gender || '').toLowerCase() === 'female' ? 'selected' : ''}>Nữ</option>
