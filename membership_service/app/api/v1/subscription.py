@@ -4,7 +4,7 @@ from typing import List
 from app.db.database import get_db
 from app.services import subscription as sub_service
 from app.schemas import subscription as sub_schema
-from app.external_services import get_user_by_id
+from app.external_services import get_user_by_id, send_task_notification
 
 router = APIRouter(
     tags=["Quản lý Đăng ký (Subscriptions)"]
@@ -38,7 +38,21 @@ async def subscribe_package(sub: sub_schema.SubscriptionCreate, db: Session = De
         )
 
     # 2. Nếu User tồn tại, tiến hành tạo gói tập
-    return sub_service.create_subscription(db, sub)
+    created = sub_service.create_subscription(db, sub)
+    await send_task_notification(
+        sub.user_id,
+        subject="Đăng ký gói tập thành công",
+        message=(
+            f"Bạn vừa đăng ký gói tập thành công.\n"
+            f"Package ID: {sub.package_id}\n"
+            f"Ngày bắt đầu: {created.start_date}\n"
+            f"Ngày kết thúc: {created.end_date}"
+        ),
+        task_type="membership",
+        action_label="Xem gói tập",
+        action_path="/customer/subscription",
+    )
+    return created
 
 @router.get("/user/{user_id}",
             response_model=List[sub_schema.SubscriptionOut],

@@ -60,3 +60,23 @@ Body:
 ```
 
 Nếu SMTP chưa cấu hình, API trả `mode: preview` và không gửi email thật.
+
+## Task Notification
+
+- `POST /api/v1/intelligence/notifications/task`
+- Gateway: `POST /api/intelligence/notifications/task`
+
+Body:
+
+```json
+{
+  "user_id": 16,
+  "subject": "Đăng ký gói tập thành công",
+  "message": "Bạn vừa đăng ký gói tập thành công.",
+  "task_type": "membership",
+  "action_label": "Xem gói tập",
+  "action_path": "/customer/subscription"
+}
+```
+
+Endpoint này tự lấy email của user từ `user_service` rồi gửi Gmail nếu SMTP đã cấu hình, hoặc trả preview nếu chưa cấu hình.

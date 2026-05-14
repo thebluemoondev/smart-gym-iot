@@ -21,6 +21,7 @@ from app.services import payment as payment_service
 from app.schemas.payment import PaymentOut, PaymentResponse, PaymentCallbackRequest
 
 router = APIRouter(tags=["Thanh toán (Payment)"])
+INTELLIGENCE_SERVICE_URL = "http://intelligence_service:6007"
 
 
 # Mã giảm giá được hỗ trợ
@@ -50,6 +51,25 @@ def apply_discount(amount: float, discount_code: str = None) -> tuple:
     final_amount = amount * (1 - discount_percent / 100)
 
     return final_amount, code, discount_percent
+
+
+def send_task_notification(user_id: int, subject: str, message: str, task_type: str = "payment", action_label: str | None = None, action_path: str | None = None):
+    payload = {
+        "user_id": user_id,
+        "subject": subject,
+        "message": message,
+        "task_type": task_type,
+        "action_label": action_label,
+        "action_path": action_path,
+    }
+    try:
+        httpx.post(
+            f"{INTELLIGENCE_SERVICE_URL}/api/v1/intelligence/notifications/task",
+            json=payload,
+            timeout=6.0
+        )
+    except Exception:
+        pass
 
 
 @router.post("/create", response_model=PaymentResponse, summary="Tạo thanh toán mới")
@@ -217,6 +237,17 @@ def payment_callback(data: PaymentCallbackRequest, db: Session = Depends(get_db)
             transaction_id=data.transaction_id,
             callback_data=data.extra_data
         )
+        send_task_notification(
+            payment.user_id,
+            subject="Thanh toán đã được xác nhận",
+            message=(
+                f"Thanh toán cho đơn {payment.order_id} đã thành công.\n"
+                f"Số tiền: {int(payment.amount)} VND"
+            ),
+            task_type="payment_success",
+            action_label="Xem gói tập",
+            action_path="/customer/subscription",
+        )
         return {"status": "success", "message": "Cập nhật thành công"}
     else:
         payment_service.update_payment_status(db, data.order_id, "failed")
@@ -283,6 +314,17 @@ async def confirm_cash_payment(
                 )
                 if sub_response.status_code == 201:
                     subscription_data = sub_response.json()
+                    send_task_notification(
+                        payment.user_id,
+                        subject="Thanh toán QR đã được xác nhận",
+                        message=(
+                            f"Thanh toán QR cho đơn {order_id} đã được xác nhận thành công.\n"
+                            f"Gói tập đã được kích hoạt."
+                        ),
+                        task_type="payment_success",
+                        action_label="Xem gói tập",
+                        action_path="/customer/subscription",
+                    )
                     return {
                         "status": "success",
                         "message": "Xác nhận thanh toán và kích hoạt gói tập thành công!",

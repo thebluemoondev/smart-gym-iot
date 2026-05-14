@@ -34,6 +34,7 @@
 - `GET /api/intelligence/user/{user_id}/notifications`
 - `GET /api/intelligence/admin/overview`
 - `POST /api/intelligence/notifications/email`
+- `POST /api/intelligence/notifications/task`
 
 ## Service Docs
 

@@ -16,10 +16,14 @@ Cập nhật cuối: 11/05/2026
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import httpx
+
 from app.db.database import get_db
 from app.services import user as user_service
 from app.schemas import user as user_schema
 from app.services import rfid as rfid_service
+
+INTELLIGENCE_SERVICE_URL = "http://intelligence_service:6007"
 
 router = APIRouter(
     tags=["Quản lý Hội viên (Members)"]
@@ -52,6 +56,21 @@ ERROR_401 = {
         }
     }
 }
+
+
+def notify_user_task(user_id: int, subject: str, message: str, task_type: str = "profile", action_label: str | None = None, action_path: str | None = None):
+    payload = {
+        "user_id": user_id,
+        "subject": subject,
+        "message": message,
+        "task_type": task_type,
+        "action_label": action_label,
+        "action_path": action_path,
+    }
+    try:
+        httpx.post(f"{INTELLIGENCE_SERVICE_URL}/api/v1/intelligence/notifications/task", json=payload, timeout=6.0)
+    except Exception:
+        pass
 
 
 # ==================== AUTH ENDPOINTS ====================
@@ -273,7 +292,17 @@ def create_new_user(user: user_schema.CreateUser, db: Session = Depends(get_db))
     user.password = password
     user.name = name
     user.phone = phone
-    return user_service.create_user(user, db)
+    created = user_service.create_user(user, db)
+    if created.email:
+        notify_user_task(
+            created.id,
+            subject="Tạo tài khoản thành công",
+            message="Tài khoản của bạn đã được tạo thành công. Hãy đăng nhập để hoàn tất hồ sơ và bắt đầu sử dụng Smart Gym.",
+            task_type="user_create",
+            action_label="Đăng nhập",
+            action_path="/login",
+        )
+    return created
 
 
 @router.put(
@@ -304,6 +333,14 @@ def update_existing_user(id: int, user: user_schema.UpdateUser, db: Session = De
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Không tìm thấy hội viên để cập nhật"
         )
+    notify_user_task(
+        updated_user.id,
+        subject="Hồ sơ đã được cập nhật",
+        message="Thông tin hồ sơ của bạn đã được lưu thành công. Hệ thống sẽ đồng bộ các gợi ý và thông báo mới.",
+        task_type="profile_update",
+        action_label="Xem hồ sơ",
+        action_path="/customer/profile",
+    )
     return updated_user
 
 

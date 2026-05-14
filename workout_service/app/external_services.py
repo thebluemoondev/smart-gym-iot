@@ -3,6 +3,7 @@ from fastapi import HTTPException
 
 USER_SERVICE_URL = "http://user_service:6001"
 MEMBERSHIP_SERVICE_URL = "http://membership_service:6002"
+INTELLIGENCE_SERVICE_URL = "http://intelligence_service:6007"
 
 async def verify_user_and_membership(user_id: int):
     async with httpx.AsyncClient() as client:
@@ -43,3 +44,22 @@ async def verify_user_and_membership(user_id: int):
             # In ra log để bạn dễ debug lỗi kết nối
             print(f"Connection error: {exc}")
             raise HTTPException(status_code=503, detail="Dịch vụ nội bộ không phản hồi")
+
+
+async def send_task_notification(user_id: int, subject: str, message: str, task_type: str = "workout", action_label: str | None = None, action_path: str | None = None):
+    payload = {
+        "user_id": user_id,
+        "subject": subject,
+        "message": message,
+        "task_type": task_type,
+        "action_label": action_label,
+        "action_path": action_path,
+    }
+    async with httpx.AsyncClient(timeout=6.0) as client:
+        try:
+            response = await client.post(f"{INTELLIGENCE_SERVICE_URL}/api/v1/intelligence/notifications/task", json=payload)
+            if response.status_code >= 400:
+                return None
+            return response.json()
+        except httpx.RequestError:
+            return None

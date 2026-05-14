@@ -8,7 +8,7 @@ from app.services import workout_history as history_service
 from app.schemas import exercise as ex_schema
 from app.schemas import workout_plan as plan_schema
 from app.schemas import workout_history as history_schema
-from app.external_services import verify_user_and_membership
+from app.external_services import verify_user_and_membership, send_task_notification
 
 router = APIRouter(
     tags=["Quản lý Tập luyện (Workout)"]
@@ -53,7 +53,19 @@ async def create_plan(plan: plan_schema.WorkoutPlanCreate, db: Session = Depends
     if not is_valid:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=message)
 
-    return plan_service.create_workout_plan(db, plan)
+    created = plan_service.create_workout_plan(db, plan)
+    await send_task_notification(
+        plan.user_id,
+        subject="Kế hoạch tập đã được tạo",
+        message=(
+            f"Kế hoạch '{plan.name}' của bạn đã được lưu thành công.\n"
+            f"Số bài tập: {len(plan.details)}"
+        ),
+        task_type="workout_plan",
+        action_label="Xem kế hoạch",
+        action_path="/customer/workout-plan/full",
+    )
+    return created
 
 @router.get("/plans/user/{user_id}",
             response_model=List[plan_schema.WorkoutPlanOut],
@@ -80,7 +92,20 @@ async def log_workout(history: history_schema.WorkoutHistoryCreate, db: Session 
     if not is_valid:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=message)
 
-    return history_service.log_workout(db, history)
+    created = history_service.log_workout(db, history)
+    await send_task_notification(
+        history.user_id,
+        subject="Đã ghi nhận buổi tập",
+        message=(
+            f"Buổi tập của bạn đã được lưu thành công.\n"
+            f"Bài tập ID: {history.exercise_id}\n"
+            f"Set/Reps: {history.sets}/{history.reps}"
+        ),
+        task_type="workout_history",
+        action_label="Xem lịch sử",
+        action_path="/customer/workout-history",
+    )
+    return created
 
 @router.get("/history/user/{user_id}",
             response_model=List[history_schema.WorkoutHistoryOut],

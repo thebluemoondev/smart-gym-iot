@@ -27,6 +27,15 @@ class EmailRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
 
 
+class TaskNotificationRequest(BaseModel):
+    user_id: int
+    subject: str = Field(min_length=1, max_length=255)
+    message: str = Field(min_length=1, max_length=4000)
+    task_type: str = Field(default="task", max_length=80)
+    action_label: str | None = Field(default=None, max_length=120)
+    action_path: str | None = Field(default=None, max_length=255)
+
+
 app = FastAPI(
     title="GYM Intelligence Service",
     docs_url="/docs",
@@ -123,6 +132,74 @@ async def fetch_json(client: httpx.AsyncClient, url: str, fallback: Any = None) 
         return response.json()
     except Exception:
         return fallback
+
+
+def build_email_delivery(payload: EmailRequest) -> dict[str, Any]:
+    smtp_host = os.getenv("SMTP_HOST", "").strip()
+    smtp_port = int(os.getenv("SMTP_PORT", "587") or 587)
+    smtp_username = os.getenv("SMTP_USERNAME", "").strip()
+    smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
+    smtp_from = os.getenv("SMTP_FROM", "").strip() or smtp_username
+
+    if not smtp_host or not smtp_username or not smtp_password or not smtp_from:
+        return {
+            "sent": False,
+            "mode": "preview",
+            "message": "SMTP chưa cấu hình. Email chưa được gửi, nhưng payload đã hợp lệ.",
+            "email": payload.model_dump(),
+        }
+
+    message = EmailMessage()
+    message["From"] = smtp_from
+    message["To"] = payload.to
+    message["Subject"] = payload.subject
+    message.set_content(payload.message)
+
+    if smtp_port == 465:
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context, timeout=10) as server:
+            server.login(smtp_username, smtp_password)
+            server.send_message(message)
+    else:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+            server.starttls(context=ssl.create_default_context())
+            server.login(smtp_username, smtp_password)
+            server.send_message(message)
+
+    return {"sent": True, "mode": "smtp", "to": payload.to}
+
+
+async def send_task_notification(task: TaskNotificationRequest) -> dict[str, Any]:
+    async with httpx.AsyncClient(timeout=6.0) as client:
+        user = await fetch_json(client, f"{USER_SERVICE_URL}/{task.user_id}", {}) or {}
+    email = (user or {}).get("email")
+    if not email:
+        return {
+            "sent": False,
+            "skipped": True,
+            "reason": "User chưa có email",
+            "user_id": task.user_id,
+        }
+
+    email_payload = EmailRequest(
+        to=email,
+        subject=task.subject,
+        message=(
+            f"{task.message}\n\n"
+            f"Loại tác vụ: {task.task_type}\n"
+            f"User: {user.get('username') or user.get('name') or task.user_id}\n"
+            f"Phòng gym Smart Gym"
+        ),
+    )
+    result = build_email_delivery(email_payload)
+    result.update({
+        "user_id": task.user_id,
+        "email": email,
+        "task_type": task.task_type,
+        "action_label": task.action_label,
+        "action_path": task.action_path,
+    })
+    return result
 
 
 def build_user_notifications(
@@ -511,38 +588,12 @@ async def admin_overview():
 
 @app.post("/api/v1/intelligence/notifications/email")
 def send_email(payload: EmailRequest):
-    smtp_host = os.getenv("SMTP_HOST", "").strip()
-    smtp_port = int(os.getenv("SMTP_PORT", "587") or 587)
-    smtp_username = os.getenv("SMTP_USERNAME", "").strip()
-    smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
-    smtp_from = os.getenv("SMTP_FROM", "").strip() or smtp_username
+    return build_email_delivery(payload)
 
-    if not smtp_host or not smtp_username or not smtp_password or not smtp_from:
-        return {
-            "sent": False,
-            "mode": "preview",
-            "message": "SMTP chưa cấu hình. Email chưa được gửi, nhưng payload đã hợp lệ.",
-            "email": payload.model_dump(),
-        }
 
-    message = EmailMessage()
-    message["From"] = smtp_from
-    message["To"] = payload.to
-    message["Subject"] = payload.subject
-    message.set_content(payload.message)
-
-    if smtp_port == 465:
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context, timeout=10) as server:
-            server.login(smtp_username, smtp_password)
-            server.send_message(message)
-    else:
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-            server.starttls(context=ssl.create_default_context())
-            server.login(smtp_username, smtp_password)
-            server.send_message(message)
-
-    return {"sent": True, "mode": "smtp", "to": payload.to}
+@app.post("/api/v1/intelligence/notifications/task")
+async def send_task_email(payload: TaskNotificationRequest):
+    return await send_task_notification(payload)
 
 
 async def asyncio_gather_dict(tasks: dict[str, Any]) -> dict[str, Any]:

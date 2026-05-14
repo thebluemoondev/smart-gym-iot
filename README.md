@@ -61,6 +61,7 @@ Smart Gym là hệ thống quản lý phòng tập gym thông minh với công n
 - `intelligence_service` tổng hợp dữ liệu từ user, membership, workout và payment.
 - Customer dashboard hiển thị điểm thông minh, cảnh báo, gợi ý bài tập tiếp theo.
 - Admin có trang phân tích nghiệp vụ tại `/admin/intelligence`.
+- Sau khi user hoàn tất tác vụ như đăng ký gói, tạo kế hoạch tập, cập nhật hồ sơ hoặc thanh toán thành công, hệ thống sẽ gửi Gmail nếu user đã có `email`.
 - Service hỗ trợ gửi email qua SMTP/Gmail khi cấu hình `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`; nếu chưa cấu hình sẽ chạy ở chế độ preview.
 
 ## 🛠️ Công nghệ
