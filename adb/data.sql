@@ -22,13 +22,26 @@ GO
 USE membership_service;
 GO
 
--- Tạo gym_packages (gói tập)
-INSERT INTO gym_packages (name, price, package_desc, duration_days) VALUES
-(N'Basic', 299000, N'Gói tập cơ bản', 30),
-(N'VIP', 499000, N'Gói tập VIP', 30),
-(N'Premium', 799000, N'Gói tập Premium', 90),
-(N'Gold', 1500000, N'Gói tập Gold', 180),
-(N'Platinum', 2500000, N'Gói tập Platinum', 365);
+-- Tạo gym_packages (gói tập) nếu chưa có
+IF NOT EXISTS (SELECT 1 FROM gym_packages WHERE name = N'Basic')
+    INSERT INTO gym_packages (name, price, package_desc, duration_days)
+    VALUES (N'Basic', 299000, N'Gói tập cơ bản', 30);
+
+IF NOT EXISTS (SELECT 1 FROM gym_packages WHERE name = N'VIP')
+    INSERT INTO gym_packages (name, price, package_desc, duration_days)
+    VALUES (N'VIP', 499000, N'Gói tập VIP', 30);
+
+IF NOT EXISTS (SELECT 1 FROM gym_packages WHERE name = N'Premium')
+    INSERT INTO gym_packages (name, price, package_desc, duration_days)
+    VALUES (N'Premium', 799000, N'Gói tập Premium', 90);
+
+IF NOT EXISTS (SELECT 1 FROM gym_packages WHERE name = N'Gold')
+    INSERT INTO gym_packages (name, price, package_desc, duration_days)
+    VALUES (N'Gold', 1500000, N'Gói tập Gold', 180);
+
+IF NOT EXISTS (SELECT 1 FROM gym_packages WHERE name = N'Platinum')
+    INSERT INTO gym_packages (name, price, package_desc, duration_days)
+    VALUES (N'Platinum', 2500000, N'Gói tập Platinum', 365);
 GO
 
 -- Tạo products (sản phẩm bán lẻ)

@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.db.database import test_connection
+from app.db.database import test_connection, Base, engine
 from app.api.v1.router import api_router
+from app.models import facility  # noqa: F401
 
 app = FastAPI(
     title="GYM Facilty Service",
@@ -31,6 +32,7 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     test_connection()
+    Base.metadata.create_all(bind=engine)
 
 app.include_router(api_router, prefix="/api/v1")
 
