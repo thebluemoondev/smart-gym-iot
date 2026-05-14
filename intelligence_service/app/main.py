@@ -143,7 +143,7 @@ def build_email_subject(subject: str) -> str:
     return f"[ThanhChinhGym] {clean_subject}"
 
 
-def build_email_html(message: str) -> str:
+def build_email_html(title: str, message: str) -> str:
     body = html_escape(message).replace("\n", "<br>")
     return f"""
     <div style="margin:0;padding:0;background:#f7f8fb;font-family:Arial,sans-serif;">
@@ -152,7 +152,7 @@ def build_email_html(message: str) -> str:
           ThanhChinhGym
         </div>
         <div style="background:#ffffff;border:1px solid #eef0f4;border-top:none;border-radius:0 0 18px 18px;padding:28px;">
-          <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">Thông báo từ hệ thống</div>
+          <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">{html_escape(title)}</div>
           <div style="font-size:15px;line-height:1.7;color:#374151;">{body}</div>
           <div style="margin-top:24px;padding-top:16px;border-top:1px solid #eef0f4;color:#6b7280;font-size:13px;">
             Email này được gửi tự động bởi hệ thống quản lý phòng gym thông minh.
@@ -161,6 +161,75 @@ def build_email_html(message: str) -> str:
       </div>
     </div>
     """
+
+
+def build_task_email_template(task: TaskNotificationRequest, user: dict[str, Any]) -> tuple[str, str, str]:
+    display_name = user.get("name") or user.get("username") or f"User #{task.user_id}"
+    task_type = (task.task_type or "task").lower()
+
+    action_line = ""
+    if task.action_label and task.action_path:
+        action_line = f"\nHành động tiếp theo: {task.action_label} ({task.action_path})"
+    elif task.action_label:
+        action_line = f"\nHành động tiếp theo: {task.action_label}"
+    elif task.action_path:
+        action_line = f"\nHành động tiếp theo: {task.action_path}"
+
+    templates = {
+        "membership": {
+            "subject": "Đăng ký gói tập thành công",
+            "title": "Đăng ký gói tập",
+            "body": (
+                f"Chào {display_name},\n"
+                f"{task.message}\n\n"
+                f"Gói tập đã được ghi nhận trên hệ thống."
+                f"{action_line}"
+            ),
+        },
+        "payment": {
+            "subject": "Thanh toán đã được xác nhận",
+            "title": "Xác nhận thanh toán",
+            "body": (
+                f"Chào {display_name},\n"
+                f"{task.message}\n\n"
+                f"Thanh toán của bạn đã được xử lý thành công."
+                f"{action_line}"
+            ),
+        },
+        "workout": {
+            "subject": "Kế hoạch luyện tập đã sẵn sàng",
+            "title": "Kế hoạch luyện tập",
+            "body": (
+                f"Chào {display_name},\n"
+                f"{task.message}\n\n"
+                f"Hệ thống đã lưu kế hoạch và sẽ dùng để gợi ý bài tập phù hợp."
+                f"{action_line}"
+            ),
+        },
+        "profile": {
+            "subject": "Hồ sơ cá nhân đã được cập nhật",
+            "title": "Cập nhật hồ sơ",
+            "body": (
+                f"Chào {display_name},\n"
+                f"{task.message}\n\n"
+                f"Hồ sơ của bạn đã được đồng bộ trên hệ thống."
+                f"{action_line}"
+            ),
+        },
+    }
+
+    template = templates.get(task_type, {
+        "subject": "Thông báo từ hệ thống",
+        "title": "Thông báo từ hệ thống",
+        "body": (
+            f"Chào {display_name},\n"
+            f"{task.message}\n\n"
+            f"Thông tin này được ghi nhận từ Smart Gym."
+            f"{action_line}"
+        ),
+    })
+
+    return build_email_subject(template["subject"]), template["title"], template["body"]
 
 
 def build_email_delivery(payload: EmailRequest) -> dict[str, Any]:
@@ -184,7 +253,7 @@ def build_email_delivery(payload: EmailRequest) -> dict[str, Any]:
     message["To"] = payload.to
     message["Subject"] = build_email_subject(payload.subject)
     message.set_content(payload.message)
-    message.add_alternative(build_email_html(payload.message), subtype="html")
+    message.add_alternative(build_email_html(payload.subject, payload.message), subtype="html")
 
     if smtp_port == 465:
         context = ssl.create_default_context()
@@ -212,11 +281,12 @@ async def send_task_notification(task: TaskNotificationRequest) -> dict[str, Any
             "user_id": task.user_id,
         }
 
+    subject, title, body = build_task_email_template(task, user)
     email_payload = EmailRequest(
         to=email,
-        subject=build_email_subject(task.subject),
+        subject=subject,
         message=(
-            f"{task.message}\n\n"
+            f"{body}\n\n"
             f"Loại tác vụ: {task.task_type}\n"
             f"User: {user.get('username') or user.get('name') or task.user_id}\n"
             f"Phòng gym Smart Gym"
@@ -229,6 +299,7 @@ async def send_task_notification(task: TaskNotificationRequest) -> dict[str, Any
         "task_type": task.task_type,
         "action_label": task.action_label,
         "action_path": task.action_path,
+        "template_title": title,
     })
     return result
 
