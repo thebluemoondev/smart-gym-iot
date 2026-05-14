@@ -160,44 +160,47 @@ def build_email_html(title: str, message: str) -> str:
     """
 
 
+def build_notification_message(message: str, action_label: str | None = None, action_path: str | None = None) -> str:
+    parts = [message.strip()]
+    if action_label and action_path:
+        parts.append(f"{action_label}: {action_path}")
+    elif action_label:
+        parts.append(action_label)
+    elif action_path:
+        parts.append(action_path)
+    return "\n".join(part for part in parts if part)
+
+
 def build_task_email_template(task: TaskNotificationRequest, user: dict[str, Any]) -> tuple[str, str, str]:
     task_type = (task.task_type or "task").lower()
-
-    action_line = ""
-    if task.action_label and task.action_path:
-        action_line = f"\n{task.action_label}: {task.action_path}"
-    elif task.action_label:
-        action_line = f"\n{task.action_label}"
-    elif task.action_path:
-        action_line = f"\n{task.action_path}"
 
     templates = {
         "membership": {
             "subject": "Đăng ký gói tập thành công",
             "title": "Đăng ký gói tập",
-            "body": f"{task.message}{action_line}",
+            "body": build_notification_message(task.message, task.action_label, task.action_path),
         },
         "payment": {
             "subject": "Thanh toán đã được xác nhận",
             "title": "Xác nhận thanh toán",
-            "body": f"{task.message}{action_line}",
+            "body": build_notification_message(task.message, task.action_label, task.action_path),
         },
         "workout": {
             "subject": "Kế hoạch luyện tập đã sẵn sàng",
             "title": "Kế hoạch luyện tập",
-            "body": f"{task.message}{action_line}",
+            "body": build_notification_message(task.message, task.action_label, task.action_path),
         },
         "profile": {
             "subject": "Hồ sơ cá nhân đã được cập nhật",
             "title": "Cập nhật hồ sơ",
-            "body": f"{task.message}{action_line}",
+            "body": build_notification_message(task.message, task.action_label, task.action_path),
         },
     }
 
     template = templates.get(task_type, {
         "subject": "Thông báo từ hệ thống",
         "title": "Thông báo từ hệ thống",
-        "body": f"{task.message}{action_line}",
+        "body": build_notification_message(task.message, task.action_label, task.action_path),
     })
 
     return build_email_subject(template["subject"]), template["title"], template["body"]

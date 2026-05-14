@@ -59,6 +59,11 @@ Body:
 }
 ```
 
+Format email chuẩn:
+
+- `subject`: tiêu đề ngắn
+- `message`: nội dung chính, không kèm dữ liệu kỹ thuật
+
 Nếu SMTP chưa cấu hình, API trả `mode: preview` và không gửi email thật.
 
 ## Task Notification
@@ -78,5 +83,11 @@ Body:
   "action_path": "/customer/subscription"
 }
 ```
+
+Format task notification chuẩn:
+
+- `subject`: tiêu đề theo tác vụ
+- `message`: mô tả chính của tác vụ
+- `action_label` và `action_path`: chỉ giữ khi cần dẫn người dùng tới bước tiếp theo
 
 Endpoint này tự lấy email của user từ `user_service` rồi gửi Gmail nếu SMTP đã cấu hình, hoặc trả preview nếu chưa cấu hình.
