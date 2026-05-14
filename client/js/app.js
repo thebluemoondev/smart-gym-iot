@@ -31,9 +31,18 @@ const fallbackExercises = [
 function loadUser() {
   try {
     const raw = localStorage.getItem('gym_user')
-    return raw ? JSON.parse(raw) : null
+    return raw ? normalizeUser(JSON.parse(raw)) : null
   } catch {
     return null
+  }
+}
+
+function normalizeUser(user) {
+  if (!user) return null
+  return {
+    ...user,
+    phone: user.phone || user.phonenumber || '',
+    phonenumber: user.phonenumber || user.phone || ''
   }
 }
 
@@ -318,9 +327,9 @@ function renderPlanRowTemplate(exerciseOptions, index = 1, prefill = {}) {
 }
 
 function saveAuth(user, token) {
-  state.user = user
+  state.user = normalizeUser(user)
   state.token = token
-  localStorage.setItem('gym_user', JSON.stringify(user))
+  localStorage.setItem('gym_user', JSON.stringify(state.user))
   localStorage.setItem('token', token)
 }
 
@@ -876,6 +885,7 @@ async function renderCustomerDashboard() {
 
 function renderCustomerProfile() {
   const user = state.user || {}
+  const phone = user.phone || user.phonenumber || ''
   const avatarChar = (user.full_name || user.name || user.username || 'U')[0]?.toUpperCase() || 'U'
   const avatarName = user.avatar_url || user.avatar || '/avatar-default.svg'
   return shellLayout(`
@@ -900,7 +910,7 @@ function renderCustomerProfile() {
           <form id="profile-form" class="grid two-col" style="margin-top:20px">
             <input class="input" name="full_name" placeholder="Họ và tên" value="${escapeAttr(user.full_name || user.name || '')}" />
             <input class="input" name="email" placeholder="Email" value="${escapeAttr(user.email || '')}" />
-            <input class="input" name="phone" placeholder="Số điện thoại" value="${escapeAttr(user.phone || '')}" />
+            <input class="input" name="phone" placeholder="Số điện thoại" value="${escapeAttr(phone)}" />
             <input class="input" name="date_of_birth" type="date" value="${escapeAttr(user.date_of_birth || '')}" />
             <input class="input" name="avatar_url" placeholder="Link ảnh đại diện (tùy chọn)" value="${escapeAttr(user.avatar_url || user.avatar || '')}" />
             <select class="select" name="gender">
@@ -912,7 +922,7 @@ function renderCustomerProfile() {
               <strong>Thông tin đã đăng ký</strong>
               <div class="grid three-col" style="margin-top:12px;gap:14px">
                 <div><div class="muted">Tên đăng nhập</div><strong>${escapeHtml(user.username || 'Chưa có')}</strong></div>
-                <div><div class="muted">Số điện thoại</div><strong>${escapeHtml(user.phone || 'Chưa có')}</strong></div>
+                <div><div class="muted">Số điện thoại</div><strong>${escapeHtml(phone || 'Chưa có')}</strong></div>
                 <div><div class="muted">Ngày sinh</div><strong>${escapeHtml(user.date_of_birth || 'Chưa có')}</strong></div>
               </div>
             </div>
@@ -1298,7 +1308,7 @@ async function renderAdminUsers() {
             ${(Array.isArray(users) ? users : []).map(u => `
               <div class="card" style="padding:14px;background:#f8fafc">
                 <strong>#${u.id} ${escapeHtml(u.username)}</strong>
-                <div class="muted">${escapeHtml(u.name || '')} - ${escapeHtml(u.phone || '')} - ${escapeHtml(u.role || '')}</div>
+                <div class="muted">${escapeHtml(u.name || '')} - ${escapeHtml(u.phone || u.phonenumber || '')} - ${escapeHtml(u.role || '')}</div>
               </div>`).join('')}
           </div>
         </div>
@@ -1830,7 +1840,7 @@ function bindGlobalActions() {
     try {
       const payload = Object.fromEntries(new FormData(profileForm).entries())
       await api(`/api/users/user/profile/${state.user?.id}`, { method: 'PUT', body: JSON.stringify(payload) })
-      state.user = { ...state.user, ...payload }
+      state.user = normalizeUser({ ...state.user, ...payload })
       localStorage.setItem('gym_user', JSON.stringify(state.user))
       showToast('Đã lưu hồ sơ.', 'success')
       render()
