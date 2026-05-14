@@ -21,6 +21,11 @@ Base qua gateway: `/api/membership`
 | `GET` | `/api/v1/subscriptions/` | `/api/membership/subscriptions/` | Danh sách đăng ký toàn hệ thống |
 | `GET` | `/api/v1/subscriptions/active/{user_id}` | `/api/membership/subscriptions/active/{user_id}` | Gói tập đang hoạt động của user |
 
+## Notes
+
+- Khi tạo subscription mới, hệ thống sẽ tự chuyển subscription `active` cũ của user sang `expired`.
+- Dashboard customer chỉ hiển thị subscription active mới nhất và kế hoạch đang dùng.
+
 ## Products
 
 | Method | Internal | Gateway | Mô tả |

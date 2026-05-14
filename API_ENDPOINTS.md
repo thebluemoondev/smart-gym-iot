@@ -10,6 +10,21 @@
 - Chatbot: `/api/chatbot`
 - Payment: `/api/payment`
 
+## Frontend Routes
+
+- `/`
+- `/login`
+- `/register`
+- `/packages`
+- `/customer`
+- `/customer/profile`
+- `/customer/subscription`
+- `/customer/workout-plan`
+- `/customer/workout-plan/full`
+- `/customer/workout-history`
+- `/customer/chatbot`
+- `/admin`
+
 ## Service Docs
 
 - [user_service/API_ENDPOINTS.md](user_service/API_ENDPOINTS.md)
@@ -18,4 +33,3 @@
 - [facility_service/API_ENDPOINTS.md](facility_service/API_ENDPOINTS.md)
 - [chatbot_service/API_ENDPOINTS.md](chatbot_service/API_ENDPOINTS.md)
 - [payment_service/API_ENDPOINTS.md](payment_service/API_ENDPOINTS.md)
-

@@ -22,3 +22,7 @@ Base qua gateway: `/api/facility`
 |---|---|---|---|
 | `GET` | `/api/v1/facility/areas` | `/api/facility/areas` | Danh sách khu vực tập luyện |
 
+## Notes
+
+- Facility service hiện tập trung vào `equipment`, `maintenance` và `areas`.
+- Các màn admin tương ứng đã được nối trong client static.

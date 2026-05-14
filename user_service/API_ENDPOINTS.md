@@ -36,6 +36,7 @@ Base qua gateway: `/api/users`
 
 ## Notes
 
-- `phone` trong schema và cột DB đều dùng cùng tên `phone`.
-- `admin/admin` chỉ hoạt động nếu database đã được seed từ `adb/reset.sql`.
+- `phone` được map sang cột `phonenumber` trong DB.
+- `avatar_url` đã được hỗ trợ ở schema, model và DB live.
+- `admin/admin123` hoạt động nếu database đã được seed từ `adb/reset.sql`.
 - JWT secret được đọc từ biến môi trường `SECRET_KEY`.

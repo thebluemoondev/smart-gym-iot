@@ -11,6 +11,10 @@ Base qua gateway: `/api/chatbot`
 
 ## Notes
 
+- Customer và admin chat đã được tách history riêng ở frontend.
+- Prompt hiện có ngữ cảnh gói active, kế hoạch gần nhất và số ngày còn lại.
+
+## Notes
+
 - Body nhận `user_id` và `message`.
 - Response trả về `user_id` và `answer`.
-
