@@ -4,6 +4,7 @@ import ssl
 from collections import Counter, defaultdict
 from datetime import date, datetime, timezone
 from email.message import EmailMessage
+from email.utils import formataddr
 from typing import Any
 
 import httpx
@@ -140,6 +141,7 @@ def build_email_delivery(payload: EmailRequest) -> dict[str, Any]:
     smtp_username = os.getenv("SMTP_USERNAME", "").strip()
     smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
     smtp_from = os.getenv("SMTP_FROM", "").strip() or smtp_username
+    smtp_from_name = os.getenv("SMTP_FROM_NAME", "").strip() or "ThanhChinhGym"
 
     if not smtp_host or not smtp_username or not smtp_password or not smtp_from:
         return {
@@ -147,10 +149,10 @@ def build_email_delivery(payload: EmailRequest) -> dict[str, Any]:
             "mode": "preview",
             "message": "SMTP chưa cấu hình. Email chưa được gửi, nhưng payload đã hợp lệ.",
             "email": payload.model_dump(),
-        }
+    }
 
     message = EmailMessage()
-    message["From"] = smtp_from
+    message["From"] = formataddr((smtp_from_name, smtp_from))
     message["To"] = payload.to
     message["Subject"] = payload.subject
     message.set_content(payload.message)
