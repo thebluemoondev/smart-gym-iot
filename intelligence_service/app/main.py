@@ -3,6 +3,7 @@ import smtplib
 import ssl
 from collections import Counter, defaultdict
 from datetime import date, datetime, timezone
+from html import escape as html_escape
 from email.message import EmailMessage
 from email.utils import formataddr
 from typing import Any
@@ -135,6 +136,33 @@ async def fetch_json(client: httpx.AsyncClient, url: str, fallback: Any = None) 
         return fallback
 
 
+def build_email_subject(subject: str) -> str:
+    clean_subject = subject.strip()
+    if clean_subject.lower().startswith("[thanhchingym]"):
+        return clean_subject
+    return f"[ThanhChinhGym] {clean_subject}"
+
+
+def build_email_html(message: str) -> str:
+    body = html_escape(message).replace("\n", "<br>")
+    return f"""
+    <div style="margin:0;padding:0;background:#f7f8fb;font-family:Arial,sans-serif;">
+      <div style="max-width:640px;margin:0 auto;padding:32px 16px;">
+        <div style="background:linear-gradient(135deg,#ea1d5d 0%,#ff7a18 100%);color:#fff;border-radius:18px 18px 0 0;padding:22px 28px;font-size:22px;font-weight:700;">
+          ThanhChinhGym
+        </div>
+        <div style="background:#ffffff;border:1px solid #eef0f4;border-top:none;border-radius:0 0 18px 18px;padding:28px;">
+          <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">Thông báo từ hệ thống</div>
+          <div style="font-size:15px;line-height:1.7;color:#374151;">{body}</div>
+          <div style="margin-top:24px;padding-top:16px;border-top:1px solid #eef0f4;color:#6b7280;font-size:13px;">
+            Email này được gửi tự động bởi hệ thống quản lý phòng gym thông minh.
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+
+
 def build_email_delivery(payload: EmailRequest) -> dict[str, Any]:
     smtp_host = os.getenv("SMTP_HOST", "").strip()
     smtp_port = int(os.getenv("SMTP_PORT", "587") or 587)
@@ -154,8 +182,9 @@ def build_email_delivery(payload: EmailRequest) -> dict[str, Any]:
     message = EmailMessage()
     message["From"] = formataddr((smtp_from_name, smtp_from))
     message["To"] = payload.to
-    message["Subject"] = payload.subject
+    message["Subject"] = build_email_subject(payload.subject)
     message.set_content(payload.message)
+    message.add_alternative(build_email_html(payload.message), subtype="html")
 
     if smtp_port == 465:
         context = ssl.create_default_context()
@@ -185,7 +214,7 @@ async def send_task_notification(task: TaskNotificationRequest) -> dict[str, Any
 
     email_payload = EmailRequest(
         to=email,
-        subject=task.subject,
+        subject=build_email_subject(task.subject),
         message=(
             f"{task.message}\n\n"
             f"Loại tác vụ: {task.task_type}\n"
