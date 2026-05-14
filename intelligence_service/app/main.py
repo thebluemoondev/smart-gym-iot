@@ -318,9 +318,9 @@ def build_user_notifications(
     if not phone:
         notifications.append({
             "type": "profile",
-            "severity": "warning",
-            "title": "Thiếu số điện thoại",
-            "message": "Cập nhật số điện thoại để phòng gym có thể liên hệ khi cần.",
+            "severity": "info",
+            "title": "Số điện thoại chưa có",
+            "message": "Hồ sơ hiện chưa có số điện thoại.",
             "action_label": "Cập nhật hồ sơ",
             "action_path": "/customer/profile",
         })
@@ -329,8 +329,8 @@ def build_user_notifications(
         notifications.append({
             "type": "profile",
             "severity": "info",
-            "title": "Chưa có email nhận thông báo",
-            "message": "Thêm email để sau này hệ thống có thể gửi nhắc gia hạn và lịch tập qua Gmail.",
+            "title": "Email chưa có",
+            "message": "Hồ sơ hiện chưa có email.",
             "action_label": "Thêm email",
             "action_path": "/customer/profile",
         })
@@ -338,9 +338,9 @@ def build_user_notifications(
     if not active_sub:
         notifications.append({
             "type": "membership",
-            "severity": "critical",
-            "title": "Chưa có gói tập active",
-            "message": "Bạn cần đăng ký gói tập để mở kế hoạch tập luyện và check-in.",
+            "severity": "info",
+            "title": "Chưa có gói active",
+            "message": "Hồ sơ hiện chưa có gói active.",
             "action_label": "Chọn gói tập",
             "action_path": "/packages",
         })
@@ -349,7 +349,7 @@ def build_user_notifications(
             "type": "membership",
             "severity": "warning",
             "title": "Gói tập sắp hết hạn",
-            "message": f"Gói {active_package.get('name', 'hiện tại') if active_package else 'hiện tại'} còn {days_left} ngày.",
+            "message": f"Gói {active_package.get('name', 'hiện tại') if active_package else 'hiện tại'} còn {days_left} ngày hiệu lực.",
             "action_label": "Gia hạn gói",
             "action_path": "/customer/subscription",
         })
@@ -357,9 +357,9 @@ def build_user_notifications(
     if not plans:
         notifications.append({
             "type": "workout",
-            "severity": "warning",
+            "severity": "info",
             "title": "Chưa có kế hoạch tập",
-            "message": "Tạo kế hoạch để AI Coach có ngữ cảnh tư vấn chính xác hơn.",
+            "message": "Hồ sơ hiện chưa có kế hoạch tập.",
             "action_label": "Tạo kế hoạch",
             "action_path": "/customer/workout-plan",
         })
@@ -369,7 +369,7 @@ def build_user_notifications(
             "type": "workout",
             "severity": "info",
             "title": "Chưa có lịch sử tập",
-            "message": "Ghi lại buổi tập để hệ thống phân tích tiến độ và gợi ý tăng/giảm tải.",
+            "message": "Hồ sơ hiện chưa có lịch sử tập.",
             "action_label": "Ghi lịch sử",
             "action_path": "/customer/workout-history",
         })
@@ -539,7 +539,7 @@ async def user_summary(user_id: int):
             for item in notifications
         ] or [{
             "title": "Duy trì nhịp tập",
-            "message": "Hồ sơ, gói tập và kế hoạch đang đủ dữ liệu để AI Coach tư vấn.",
+            "message": "Hồ sơ, gói tập và kế hoạch đã có dữ liệu để AI Coach tư vấn.",
             "action_label": "Hỏi AI Coach",
             "action_path": "/customer/chatbot",
         }],
@@ -664,7 +664,7 @@ async def admin_overview():
             {
                 "severity": "warning" if expiring_soon else "success",
                 "title": "Gói sắp hết hạn",
-                "message": f"{len(expiring_soon)} hội viên cần nhắc gia hạn trong 7 ngày tới.",
+                "message": f"{len(expiring_soon)} hội viên có gói hết hạn trong 7 ngày tới.",
             },
             {
                 "severity": "critical" if no_active_users else "success",

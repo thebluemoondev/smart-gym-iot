@@ -2008,11 +2008,11 @@ async function renderAdminDashboard() {
 async function renderAdminIntelligence() {
   const overview = await api('/api/intelligence/admin/overview').catch(() => null)
   return shellLayout(`
-    <div class="card" style="padding:28px">
-      <div class="pill green">Smart Business</div>
-      <h1 style="margin-bottom:8px">Phân tích nghiệp vụ</h1>
-      <p class="muted" style="margin:0">Service này đọc dữ liệu từ hội viên, đăng ký gói và kế hoạch tập để tạo insight cho admin.</p>
-    </div>
+      <div class="card" style="padding:28px">
+        <div class="pill green">Smart Business</div>
+        <h1 style="margin-bottom:8px">Phân tích nghiệp vụ</h1>
+        <p class="muted" style="margin:0">Dữ liệu hội viên, đăng ký gói và kế hoạch tập được tổng hợp để tạo insight cho admin.</p>
+      </div>
     ${renderAdminOverviewPanel(overview, true)}
   `, { title: 'Phân tích thông minh' })
 }

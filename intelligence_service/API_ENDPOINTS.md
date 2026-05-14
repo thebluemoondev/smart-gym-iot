@@ -54,8 +54,8 @@ Body:
 ```json
 {
   "to": "member@gmail.com",
-  "subject": "Nhắc lịch tập",
-  "message": "Hôm nay bạn có kế hoạch tập luyện."
+  "subject": "Thông báo từ ThanhChinhGym",
+  "message": "Hôm nay bạn có dữ liệu tập luyện mới."
 }
 ```
 
