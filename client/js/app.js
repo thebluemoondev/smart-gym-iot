@@ -8,6 +8,7 @@ const state = {
   adminChatHistory: [],
   customerChatKey: '',
   adminChatKey: '',
+  customerChatContext: {},
   mobileMenuOpen: false,
   adminMenuOpen: false
 }
@@ -1228,6 +1229,7 @@ async function renderCustomerChatbot() {
     daysLeft,
     activePlanCount: Array.isArray(plans) ? plans.length : 0
   }
+  state.customerChatContext = chatContext
   state.customerChatKey = chatStorageKey('customer', user.id)
   state.customerChatHistory = loadChatHistory(state.customerChatKey)
   return shellLayout(`
@@ -2036,7 +2038,7 @@ function bindGlobalActions() {
       renderChatMessages('chat-thread', state.customerChatHistory)
       const res = await api('/api/chatbot/chat/message', {
         method: 'POST',
-        body: JSON.stringify({ user_id: state.user?.id, message: buildChatPrompt(form.message, chatContext) })
+        body: JSON.stringify({ user_id: state.user?.id, message: buildChatPrompt(form.message, state.customerChatContext || {}) })
       })
       state.customerChatHistory = [...(state.customerChatHistory || []), { role: 'assistant', text: res.answer || 'Không có phản hồi.' }]
       saveChatHistory(state.customerChatHistory, state.customerChatKey || chatStorageKey('customer', state.user?.id))
