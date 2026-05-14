@@ -77,7 +77,18 @@ INSERT INTO exercises (name, description, muscle_group) VALUES
 (N'Deadlift', N'Bài tập toàn thân', 'full_body'),
 (N'Bench Press', N'Bài tập ngực', 'chest'),
 (N'Bicep Curl', N'Bài tập tay trước', 'arms'),
-(N'Tricep Extension', N'Bài tập tay sau', 'arms');
+(N'Tricep Extension', N'Bài tập tay sau', 'arms'),
+(N'Lat Pulldown', N'Bài tập xô và lưng trên', 'back'),
+(N'Shoulder Press', N'Bài tập vai', 'shoulders'),
+(N'Leg Press', N'Bài tập đùi và mông', 'legs'),
+(N'Walking Lunges', N'Bài tập chân và thăng bằng', 'legs'),
+(N'Cable Row', N'Bài tập lưng giữa', 'back'),
+(N'Russian Twist', N'Bài tập xoay thân và core', 'core'),
+(N'Mountain Climber', N'Bài tập tim mạch và core', 'cardio'),
+(N'Burpee', N'Bài tập toàn thân đốt mỡ', 'full_body'),
+(N'Hanging Knee Raise', N'Bài tập bụng dưới', 'abs'),
+(N'Incline Dumbbell Press', N'Bài tập ngực trên', 'chest'),
+(N'Face Pull', N'Bài tập vai sau và lưng trên', 'shoulders');
 GO
 
 -- Tạo workout_plans (kế hoạch tập)

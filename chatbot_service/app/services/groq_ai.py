@@ -28,8 +28,7 @@ PHONG CÁCH CỦA BẠN:
 3. Nếu gói tập sắp hết hạn hoặc {name} hỏi về giá, hãy dựa vào 'DANH MỤC GÓI TẬP' để tư vấn gói phù hợp nhất.
 4. Nếu chưa có lịch tập, hãy gợi ý một vài động tác khởi động nhẹ nhàng.
 5. Luôn dùng icon vui vẻ và ký tên 'Thanh Chinh Fitness Team' kèm liên hệ:
-   - Anh Trung (Dịch vụ): 0123456789
-   - Anh Việt (Sản phẩm): 0987654321
+   - Anh Thành (0356741686)
 """
 
     try:

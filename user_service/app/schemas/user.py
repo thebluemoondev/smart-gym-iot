@@ -13,6 +13,7 @@ class UserBase(BaseModel):
     name: Optional[str] = Field(default=None, min_length=2, max_length=255)
     username: str = Field(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9._-]+$")
     phone: Optional[str] = Field(default=None, min_length=8, max_length=15)
+    avatar_url: Optional[str] = Field(default=None, max_length=500)
 
     @field_validator("name")
     @classmethod
@@ -34,6 +35,11 @@ class UserBase(BaseModel):
             raise ValueError("Số điện thoại không hợp lệ")
         return value
 
+    @field_validator("avatar_url")
+    @classmethod
+    def normalize_avatar_url(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
 
 class CreateUser(UserBase):
     password: str = Field(min_length=6, max_length=128)
@@ -48,6 +54,7 @@ class UpdateUser(BaseModel):
     name: Optional[str] = Field(default=None, min_length=2, max_length=255)
     password: Optional[str] = Field(default=None, min_length=6, max_length=128)
     phone: Optional[str] = Field(default=None, min_length=8, max_length=15)
+    avatar_url: Optional[str] = Field(default=None, max_length=500)
 
     @field_validator("name")
     @classmethod
@@ -69,12 +76,18 @@ class UpdateUser(BaseModel):
             raise ValueError("Số điện thoại không hợp lệ")
         return value
 
+    @field_validator("avatar_url")
+    @classmethod
+    def normalize_avatar_url(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
 
 class UserOut(BaseModel):
     id: int
     name: Optional[str] = None
     username: str
     phone: Optional[str] = Field(default=None, alias="phonenumber")
+    avatar_url: Optional[str] = None
     role: str = "user"
     created_at: Optional[datetime] = None
 

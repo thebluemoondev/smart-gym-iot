@@ -17,6 +17,7 @@ CREATE TABLE users (
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     phonenumber VARCHAR(20) NULL,
+    avatar_url VARCHAR(500) NULL,
     role VARCHAR(10) NOT NULL DEFAULT 'user',
     created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
 );

@@ -10,6 +10,9 @@ from app.schemas import user as schema
 from app.services.security import hash_password, verify_password, create_access_token
 
 
+DEFAULT_AVATAR_URL = "/avatar-default.svg"
+
+
 def get_all_users(db: Session):
     return db.query(model.User).all()
 
@@ -25,6 +28,7 @@ def create_user(user: schema.CreateUser, db: Session):
         password=hashed_pwd,
         name=user.name,
         phonenumber=user.phone,
+        avatar_url=user.avatar_url or DEFAULT_AVATAR_URL,
         role="user"
     )
     db.add(new_user)
@@ -52,6 +56,8 @@ def update_user(id: int, user: schema.UpdateUser, db: Session):
             setattr(db_user, key, hash_password(value))
         elif key == "phone":
             setattr(db_user, "phonenumber", value)
+        elif key == "avatar_url":
+            setattr(db_user, "avatar_url", value or DEFAULT_AVATAR_URL)
         else:
             setattr(db_user, key, value)
     db.commit()
