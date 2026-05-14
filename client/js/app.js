@@ -244,6 +244,33 @@ function renderNotificationCards(items = [], emptyText = 'Chưa có cảnh báo 
   `).join('')
 }
 
+function formatDateTime(value) {
+  if (!value) return 'Chưa có'
+  const dt = new Date(value)
+  if (Number.isNaN(dt.getTime())) return escapeHtml(String(value))
+  return new Intl.DateTimeFormat('vi-VN', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(dt)
+}
+
+function renderRfidHistoryCards(items = [], emptyText = 'Chưa có lịch sử quẹt thẻ.') {
+  const list = Array.isArray(items) ? items : []
+  if (!list.length) return `<div class="card" style="padding:16px;background:#f8fafc">${escapeHtml(emptyText)}</div>`
+  return list.map((item) => `
+    <div class="card" style="padding:16px;background:#fff;border:1px solid rgba(148,163,184,.14)">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+        <strong>${escapeHtml(item.user_name || item.username || `User #${item.user_id || ''}`)}</strong>
+        <span class="pill ${item.access_granted ? 'green' : 'red'}">${item.access_granted ? 'Cho vào' : 'Từ chối'}</span>
+      </div>
+      <div class="muted" style="margin-top:8px">Card: ${escapeHtml(item.card_uid || 'Chưa có')}</div>
+      <div class="muted" style="margin-top:4px">SĐT: ${escapeHtml(item.phone || 'Chưa có')}</div>
+      <div class="muted" style="margin-top:4px">Lý do: ${escapeHtml(item.reason || 'Không có')}</div>
+      <div class="muted" style="margin-top:4px">Thời gian: ${formatDateTime(item.checked_at)}</div>
+    </div>
+  `).join('')
+}
+
 function renderCustomerSmartCenter(summary) {
   if (!summary) {
     return `
@@ -539,12 +566,14 @@ const routes = {
   '/customer/workout-plan': renderCustomerWorkoutPlan,
   '/customer/workout-plan/full': renderCustomerWorkoutPlanFull,
   '/customer/workout-history': renderCustomerWorkoutHistory,
+  '/customer/rfid-history': renderCustomerRfidHistory,
   '/customer/notifications': renderCustomerNotifications,
   '/customer/chatbot': renderCustomerChatbot,
   '/admin': renderAdminDashboard,
   '/admin/intelligence': renderAdminIntelligence,
   '/admin/users': renderAdminUsers,
   '/admin/rfid': renderAdminRFID,
+  '/admin/rfid-history': renderAdminRfidHistory,
   '/admin/packages': renderAdminPackages,
   '/admin/subscriptions': renderAdminSubscriptions,
   '/admin/exercises': renderAdminExercises,
@@ -611,6 +640,7 @@ function shellLayout(content, options = {}) {
     ['Tổng quan', '/admin'],
     ['Hội viên', '/admin/users'],
     ['RFID', '/admin/rfid'],
+    ['Lịch sử quẹt thẻ', '/admin/rfid-history'],
     ['Gói tập', '/admin/packages'],
     ['Đăng ký', '/admin/subscriptions'],
     ['Bài tập', '/admin/exercises'],
@@ -627,6 +657,7 @@ function shellLayout(content, options = {}) {
     ['Gói tập', '/customer/subscription'],
     ['Kế hoạch', '/customer/workout-plan'],
     ['Lịch sử', '/customer/workout-history'],
+    ['Quẹt thẻ', '/customer/rfid-history'],
     ['Thông báo', '/customer/notifications'],
     ['AI Hỗ trợ', '/customer/chatbot']
   ]
@@ -922,6 +953,7 @@ async function renderCustomerDashboard() {
     { label: 'Xem gói tập', path: '/packages', tone: 'primary' },
     { label: 'Kế hoạch hôm nay', path: '/customer/workout-plan', tone: 'secondary' },
     { label: 'Lịch sử đã tập', path: '/customer/workout-history', tone: 'ghost' },
+    { label: 'Lịch sử quẹt thẻ', path: '/customer/rfid-history', tone: 'ghost' },
     { label: 'AI Coach', path: '/customer/chatbot', tone: 'ghost' },
     { label: 'Thông tin cá nhân', path: '/customer/profile', tone: 'ghost' }
   ]
@@ -1368,6 +1400,51 @@ async function renderCustomerWorkoutHistory() {
   `)
 }
 
+async function renderCustomerRfidHistory() {
+  const user = state.user || {}
+  const history = user.id ? await api(`/api/users/history/user/${user.id}?limit=100`).catch(() => []) : []
+  const granted = Array.isArray(history) ? history.filter((item) => item.access_granted).length : 0
+  const denied = Array.isArray(history) ? history.filter((item) => !item.access_granted).length : 0
+  const latest = Array.isArray(history) && history.length ? history[0] : null
+  return shellLayout(`
+    <section class="section" style="padding-top:24px">
+      <div class="container">
+        <div class="card plan-highlight" style="padding:28px;background:linear-gradient(135deg,rgba(220,38,38,.08),rgba(34,197,94,.10))">
+          <div class="pill green">RFID History</div>
+          <h1 style="margin-bottom:8px">Lịch sử quẹt thẻ</h1>
+          <p class="muted" style="margin:0">Ghi nhận các lần quẹt thẻ và trạng thái vào cửa của bạn.</p>
+        </div>
+        <div class="grid three-col" style="margin-top:24px">
+          ${statCard(String(Array.isArray(history) ? history.length : 0), 'Tổng lượt quẹt')}
+          ${statCard(String(granted), 'Được vào')}
+          ${statCard(String(denied), 'Từ chối')}
+        </div>
+        <div class="grid two-col" style="margin-top:24px">
+          <div class="card" style="padding:24px">
+            <h3>Lượt quẹt gần đây</h3>
+            <div class="grid" style="margin-top:16px">
+              ${renderRfidHistoryCards(history, 'Chưa có lịch sử quẹt thẻ.')}
+            </div>
+          </div>
+          <div class="card" style="padding:24px">
+            <h3>Thông tin gần nhất</h3>
+            ${latest ? `
+              <div class="card" style="padding:16px;background:#f8fafc;border:1px solid rgba(148,163,184,.12);margin-top:16px">
+                <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+                  <strong>${escapeHtml(latest.access_granted ? 'Cho vào' : 'Từ chối')}</strong>
+                  <span class="pill ${latest.access_granted ? 'green' : 'red'}">${formatDateTime(latest.checked_at)}</span>
+                </div>
+                <div class="muted" style="margin-top:8px">Card: ${escapeHtml(latest.card_uid || '')}</div>
+                <div class="muted" style="margin-top:4px">Lý do: ${escapeHtml(latest.reason || '')}</div>
+              </div>
+            ` : '<div class="card" style="padding:16px;background:#f8fafc;margin-top:16px">Chưa có lịch sử.</div>'}
+          </div>
+        </div>
+      </div>
+    </section>
+  `, { title: 'Lịch sử quẹt thẻ' })
+}
+
 async function renderCustomerNotifications() {
   const user = state.user || {}
   const summary = user.id ? await api(`/api/intelligence/user/${user.id}/summary`).catch(() => null) : null
@@ -1537,7 +1614,10 @@ async function renderAdminRFID() {
       <div class="container">
         <div class="card" style="padding:28px">
           <h1>RFID</h1>
-          <p class="muted">Màn này hiện gắn với user_service access-check. Có thể mở rộng gán card UID khi API POST RFID được map.</p>
+          <p class="muted">Trang quản lý thẻ RFID và trạng thái vào cửa.</p>
+          <div style="margin-top:14px">
+            <button class="btn-secondary" data-nav="/admin/rfid-history">Xem lịch sử quẹt thẻ</button>
+          </div>
           <div class="grid two-col" style="margin-top:18px">
             ${(Array.isArray(users) ? users.slice(0, 6) : []).map(u => `
               <div class="card" style="padding:14px;background:#f8fafc">
@@ -1549,6 +1629,51 @@ async function renderAdminRFID() {
       </div>
     </section>
   `, { title: 'RFID' })
+}
+
+async function renderAdminRfidHistory() {
+  const query = new URLSearchParams(location.search)
+  const selectedUserId = query.get('user_id') || ''
+  const selectedCardUid = query.get('card_uid') || ''
+  const selectedLimit = query.get('limit') || '100'
+  const params = new URLSearchParams()
+  if (selectedUserId) params.set('user_id', selectedUserId)
+  if (selectedCardUid) params.set('card_uid', selectedCardUid)
+  params.set('limit', selectedLimit)
+  const logs = await api(`/api/users/history?${params.toString()}`).catch(() => [])
+  const granted = Array.isArray(logs) ? logs.filter((item) => item.access_granted).length : 0
+  const denied = Array.isArray(logs) ? logs.filter((item) => !item.access_granted).length : 0
+  return shellLayout(`
+    <section class="section" style="padding-top:24px">
+      <div class="container">
+        <div class="card plan-highlight" style="padding:28px;background:linear-gradient(135deg,rgba(220,38,38,.08),rgba(34,197,94,.10))">
+          <div class="pill green">RFID History</div>
+          <h1 style="margin-bottom:8px">Lịch sử quẹt thẻ</h1>
+          <p class="muted" style="margin:0">Toàn bộ log quẹt thẻ, trạng thái vào cửa và lý do xác thực.</p>
+        </div>
+        <div class="grid four-col" style="margin-top:24px">
+          ${statCard(String(Array.isArray(logs) ? logs.length : 0), 'Tổng log')}
+          ${statCard(String(granted), 'Cho vào')}
+          ${statCard(String(denied), 'Từ chối')}
+          ${statCard(selectedUserId || 'Tất cả', 'Lọc hội viên')}
+        </div>
+        <div class="card" style="padding:24px;margin-top:24px">
+          <form id="admin-rfid-history-form" class="grid two-col">
+            <input class="input" name="user_id" type="number" placeholder="Lọc theo user_id" value="${escapeAttr(selectedUserId)}" />
+            <input class="input" name="card_uid" placeholder="Lọc theo card_uid" value="${escapeAttr(selectedCardUid)}" />
+            <input class="input" name="limit" type="number" min="1" max="500" placeholder="Số dòng" value="${escapeAttr(selectedLimit)}" />
+            <button class="btn-primary" type="submit">Lọc lịch sử</button>
+          </form>
+        </div>
+        <div class="card" style="padding:24px;margin-top:24px">
+          <h3>Kết quả</h3>
+          <div class="grid" style="margin-top:16px">
+            ${renderRfidHistoryCards(logs, 'Chưa có log quẹt thẻ.')}
+          </div>
+        </div>
+      </div>
+    </section>
+  `, { title: 'Lịch sử quẹt thẻ' })
 }
 
 async function renderAdminPackages() {
@@ -1986,6 +2111,7 @@ async function renderAdminDashboard() {
           <button class="btn-primary" data-nav="/admin/users">Hội viên</button>
           <button class="btn-secondary" data-nav="/admin/subscriptions">Đăng ký</button>
           <button class="btn-ghost" data-nav="/admin/packages">Gói tập</button>
+          <button class="btn-ghost" data-nav="/admin/rfid-history">Lịch sử quẹt thẻ</button>
           <button class="btn-ghost" data-nav="/admin/exercises">Bài tập</button>
           <button class="btn-ghost" data-nav="/admin/equipment">Thiết bị</button>
           <button class="btn-ghost" data-nav="/admin/maintenance">Bảo trì</button>
@@ -2436,6 +2562,16 @@ function bindGlobalActions() {
     const form = Object.fromEntries(new FormData(adminPlanFilterForm).entries())
     const userId = String(form.user_id || '').trim()
     navigate(userId ? `/admin/workout-plans?user_id=${encodeURIComponent(userId)}` : '/admin/workout-plans')
+  }
+  const adminRfidHistoryForm = document.getElementById('admin-rfid-history-form')
+  if (adminRfidHistoryForm) adminRfidHistoryForm.onsubmit = (e) => {
+    e.preventDefault()
+    const form = Object.fromEntries(new FormData(adminRfidHistoryForm).entries())
+    const params = new URLSearchParams()
+    if (String(form.user_id || '').trim()) params.set('user_id', String(form.user_id).trim())
+    if (String(form.card_uid || '').trim()) params.set('card_uid', String(form.card_uid).trim())
+    if (String(form.limit || '').trim()) params.set('limit', String(form.limit).trim())
+    navigate(`/admin/rfid-history${params.toString() ? `?${params.toString()}` : ''}`)
   }
   const adminHistoryFilterForm = document.getElementById('admin-history-filter-form')
   if (adminHistoryFilterForm) adminHistoryFilterForm.onsubmit = (e) => {

@@ -34,6 +34,7 @@ app.add_middleware(
 def startup():
     test_connection()
     ensure_user_profile_columns()
+    ensure_rfid_access_log_table()
 
 
 def ensure_user_profile_columns():
@@ -48,6 +49,36 @@ def ensure_user_profile_columns():
                 conn.execute(text(statement))
     except Exception as exc:
         print("Không thể đảm bảo cột hồ sơ user:", exc)
+
+
+def ensure_rfid_access_log_table():
+    statements = [
+        """
+        IF OBJECT_ID('rfid_access_logs', 'U') IS NULL
+        CREATE TABLE rfid_access_logs (
+            id INT IDENTITY(1,1) PRIMARY KEY,
+            card_uid VARCHAR(50) NOT NULL,
+            user_id INT NULL,
+            access_granted BIT NOT NULL DEFAULT 0,
+            reason NVARCHAR(255) NULL,
+            checked_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+        )
+        """,
+        """
+        IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_rfid_access_logs_user_id')
+        CREATE INDEX IX_rfid_access_logs_user_id ON rfid_access_logs(user_id)
+        """,
+        """
+        IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_rfid_access_logs_checked_at')
+        CREATE INDEX IX_rfid_access_logs_checked_at ON rfid_access_logs(checked_at)
+        """,
+    ]
+    try:
+        with engine.begin() as conn:
+            for statement in statements:
+                conn.execute(text(statement))
+    except Exception as exc:
+        print("Không thể đảm bảo bảng lịch sử quẹt thẻ:", exc)
 
 app.include_router(api_router, prefix="/api/v1")
 

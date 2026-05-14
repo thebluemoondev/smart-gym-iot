@@ -7,6 +7,8 @@ GO
 
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'rfid_cards')
     DROP TABLE rfid_cards;
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'rfid_access_logs')
+    DROP TABLE rfid_access_logs;
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'users')
     DROP TABLE users;
 GO
@@ -37,6 +39,18 @@ CREATE TABLE rfid_cards (
 );
 GO
 
+CREATE TABLE rfid_access_logs (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    card_uid VARCHAR(50) NOT NULL,
+    user_id INT NULL,
+    access_granted BIT NOT NULL DEFAULT 0,
+    reason NVARCHAR(255) NULL,
+    checked_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+);
+GO
+
 CREATE INDEX IX_users_username ON users(username);
 CREATE INDEX IX_users_phonenumber ON users(phonenumber);
+CREATE INDEX IX_rfid_access_logs_user_id ON rfid_access_logs(user_id);
+CREATE INDEX IX_rfid_access_logs_checked_at ON rfid_access_logs(checked_at);
 GO

@@ -17,7 +17,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas import rfid as rfid_schema
+from app.schemas import rfid_access_log as rfid_log_schema
 from app.services import rfid as rfid_service
+from app.services import rfid_access_log as rfid_log_service
 
 router = APIRouter(
     tags=["Quản lý Thẻ từ (RFID)"]
@@ -45,6 +47,38 @@ ERROR_NOT_FOUND = {
         }
     }
 }
+
+
+@router.get(
+    "/history",
+    response_model=list[rfid_log_schema.RFIDAccessLogOut],
+    summary="Lịch sử quẹt thẻ RFID",
+    description="Trả về lịch sử quẹt thẻ theo user hoặc card UID.",
+    operation_id="get_rfid_access_history"
+)
+def get_rfid_history(
+    user_id: int | None = None,
+    card_uid: str | None = None,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+):
+    return rfid_log_service.list_access_logs(
+        db,
+        user_id=user_id,
+        card_uid=card_uid,
+        limit=limit,
+    )
+
+
+@router.get(
+    "/history/user/{user_id}",
+    response_model=list[rfid_log_schema.RFIDAccessLogOut],
+    summary="Lịch sử quẹt thẻ theo hội viên",
+    description="Trả về lịch sử quẹt thẻ của một hội viên.",
+    operation_id="get_rfid_access_history_by_user"
+)
+def get_rfid_history_by_user(user_id: int, limit: int = 100, db: Session = Depends(get_db)):
+    return rfid_log_service.list_access_logs(db, user_id=user_id, limit=limit)
 
 
 @router.post(
@@ -114,5 +148,5 @@ def read_rfid_info(card_uid: str, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Thẻ này chưa được đăng ký trong hệ thống"
-        )
+    )
     return db_rfid

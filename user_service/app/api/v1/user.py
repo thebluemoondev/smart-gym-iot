@@ -22,6 +22,8 @@ from app.db.database import get_db
 from app.services import user as user_service
 from app.schemas import user as user_schema
 from app.services import rfid as rfid_service
+from app.services import rfid_access_log as rfid_log_service
+from app.schemas import rfid_access_log as rfid_log_schema
 
 INTELLIGENCE_SERVICE_URL = "http://intelligence_service:6007"
 
@@ -209,6 +211,38 @@ def read_all_users(db: Session = Depends(get_db)):
 
 
 @router.get(
+    "/history",
+    response_model=list[rfid_log_schema.RFIDAccessLogOut],
+    summary="Lịch sử quẹt thẻ RFID",
+    description="Trả về lịch sử quẹt thẻ theo hội viên hoặc card UID.",
+    operation_id="get_user_rfid_access_history"
+)
+def get_access_history(
+    user_id: int | None = None,
+    card_uid: str | None = None,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+):
+    return rfid_log_service.list_access_logs(
+        db,
+        user_id=user_id,
+        card_uid=card_uid,
+        limit=limit,
+    )
+
+
+@router.get(
+    "/history/user/{user_id}",
+    response_model=list[rfid_log_schema.RFIDAccessLogOut],
+    summary="Lịch sử quẹt thẻ theo hội viên",
+    description="Trả về lịch sử quẹt thẻ của một hội viên.",
+    operation_id="get_user_rfid_access_history_by_user"
+)
+def get_access_history_by_user(user_id: int, limit: int = 100, db: Session = Depends(get_db)):
+    return rfid_log_service.list_access_logs(db, user_id=user_id, limit=limit)
+
+
+@router.get(
     "/{id}",
     response_model=user_schema.UserOut,
     responses={404: ERROR_404},
@@ -380,6 +414,13 @@ async def access_check(card_uid: str, db: Session = Depends(get_db)):
     # BƯỚC 1: Kiểm tra thẻ trong DB nội bộ của User Service
     rfid_card = rfid_service.get_rfid_by_uid(db, card_uid)
     if not rfid_card or not rfid_card.is_active:
+        rfid_log_service.create_access_log(
+            db,
+            card_uid=card_uid,
+            user_id=getattr(rfid_card, "user_id", None),
+            access_granted=False,
+            reason="Thẻ không tồn tại hoặc đã bị khóa",
+        )
         return {"access": False, "message": "Thẻ không tồn tại hoặc đã bị khóa"}
 
     user_id = rfid_card.user_id
@@ -393,13 +434,34 @@ async def access_check(card_uid: str, db: Session = Depends(get_db)):
             if response.status_code == 200:
                 data = response.json()
                 if data:  # Nếu có gói tập active
+                    rfid_log_service.create_access_log(
+                        db,
+                        card_uid=card_uid,
+                        user_id=user_id,
+                        access_granted=True,
+                        reason="Gói active",
+                    )
                     return {
                         "access": True,
                         "user_id": user_id,
                         "message": "Chào mừng hội viên! Mời vào."
                     }
 
+            rfid_log_service.create_access_log(
+                db,
+                card_uid=card_uid,
+                user_id=user_id,
+                access_granted=False,
+                reason="Hội viên chưa mua gói hoặc gói đã hết hạn",
+            )
             return {"access": False, "message": "Hội viên chưa mua gói hoặc gói đã hết hạn"}
 
         except httpx.HTTPError:
+            rfid_log_service.create_access_log(
+                db,
+                card_uid=card_uid,
+                user_id=user_id,
+                access_granted=False,
+                reason="Lỗi xác thực gói tập (Server Down)",
+            )
             return {"access": False, "message": "Lỗi xác thực gói tập (Server Down)"}
