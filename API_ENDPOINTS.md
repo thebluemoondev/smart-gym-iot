@@ -28,6 +28,13 @@
 - `/admin`
 - `/admin/intelligence`
 
+## Smart Routes
+
+- `GET /api/intelligence/user/{user_id}/summary`
+- `GET /api/intelligence/user/{user_id}/notifications`
+- `GET /api/intelligence/admin/overview`
+- `POST /api/intelligence/notifications/email`
+
 ## Service Docs
 
 - [user_service/API_ENDPOINTS.md](user_service/API_ENDPOINTS.md)

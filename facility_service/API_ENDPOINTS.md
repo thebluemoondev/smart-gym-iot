@@ -26,3 +26,4 @@ Base qua gateway: `/api/facility`
 
 - Facility service hiện tập trung vào `equipment`, `maintenance` và `areas`.
 - Các màn admin tương ứng đã được nối trong client static.
+- Nếu thêm IoT/RFID thật sau này, nên mở thêm endpoint truy cập log check-in riêng cho service này hoặc user_service.

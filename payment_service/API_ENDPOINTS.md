@@ -19,3 +19,4 @@ Base qua gateway: `/api/payment`
 - `create` nhận `user_id`, `subscription_id`, `amount`, `payment_method`, `discount_code` qua query params.
 - `confirm-cash` tự tạo subscription nếu `subscription_id` tồn tại.
 - Frontend hiện ưu tiên hiển thị QR hoặc payment URL từ response `create`, rồi mới fallback sang `order/{order_id}`.
+- Khi thanh toán hoàn tất, dashboard customer sẽ đồng bộ trạng thái gói active từ Membership Service.

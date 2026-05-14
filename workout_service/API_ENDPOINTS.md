@@ -28,3 +28,4 @@ Base qua gateway: `/api/workout`
 
 - `plans` và `history` đều kiểm tra gói tập active qua Membership Service trước khi cho phép ghi.
 - Client hiện đã hỗ trợ form tạo kế hoạch nhiều dòng, trang full kế hoạch theo năm/tháng và export/in.
+- Kế hoạch mới nhất của user được đưa vào Smart Center và AI Coach ở frontend.

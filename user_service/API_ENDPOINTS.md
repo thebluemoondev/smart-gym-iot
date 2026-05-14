@@ -37,6 +37,7 @@ Base qua gateway: `/api/users`
 ## Notes
 
 - `phone` được map sang cột `phonenumber` trong DB.
-- `avatar_url` đã được hỗ trợ ở schema, model và DB live.
+- `email`, `date_of_birth` và `gender` đã được hỗ trợ ở schema, model và DB live.
+- `avatar_url` vẫn còn được hỗ trợ ở schema, model và DB live, nhưng frontend không còn bắt người dùng nhập link ảnh khi đăng ký.
 - `admin/admin123` hoạt động nếu database đã được seed từ `adb/reset.sql`.
 - JWT secret được đọc từ biến môi trường `SECRET_KEY`.
