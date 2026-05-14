@@ -19,10 +19,17 @@ Smart Gym là hệ thống quản lý phòng tập gym thông minh với công n
                             │
     ┌─────────┬─────────┬───┴─────┬──────────┬─────────┬─────────┐
     ▼         ▼         ▼         ▼          ▼         ▼         ▼
-┌───────┐ ┌───────┐ ┌───────┐ ┌────────┐ ┌───────┐ ┌───────┐ ┌────────┐
-│ User  │ │Member │ │Workout│ │Facility│ │Chatbot│ │Payment│ │ SQL DB │
-│ :6001 │ │ :6002 │ │ :6003 │ │ :6004  │ │ :6005 │ │ :6006 │ │Server  │
-└───────┘ └───────┘ └───────┘ └────────┘ └───────┘ └───────┘ └────────┘
+┌───────┐ ┌───────┐ ┌───────┐ ┌────────┐ ┌───────┐ ┌───────┐
+│ User  │ │Member │ │Workout│ │Facility│ │Chatbot│ │Payment│
+│ :6001 │ │ :6002 │ │ :6003 │ │ :6004  │ │ :6005 │ │ :6006 │
+└───────┘ └───────┘ └───────┘ └────────┘ └───────┘ └───────┘
+                            │         │         │
+                            └────┬────┴────┬────┘
+                                 ▼         ▼
+                         ┌──────────────────────┐
+                         │      SQL Server      │
+                         │   (DB layer dưới)    │
+                         └──────────────────────┘
 ```
 
 ## 📦 Các Service
@@ -37,6 +44,16 @@ Smart Gym là hệ thống quản lý phòng tập gym thông minh với công n
 | payment_service    | 6006 | Thanh toán QR VPBank                       |
 | client             | 80   | Frontend tĩnh HTML/CSS/JS                   |
 | apigateway         | 80   | Nginx routing                               |
+
+## Kết Nối DB
+
+- `user_service`
+- `membership_service`
+- `workout_service`
+- `facility_service`
+- `payment_service`
+
+`chatbot_service` lấy ngữ cảnh từ các service trên, không truy cập SQL Server trực tiếp.
 
 ## 🛠️ Công nghệ
 
