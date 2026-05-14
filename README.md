@@ -17,15 +17,15 @@ Smart Gym là hệ thống quản lý phòng tập gym thông minh với công n
                     │   (Nginx :80) │
                     └───────┬───────┘
                             │
-    ┌─────────┬─────────┬───┴─────┬──────────┬─────────┬─────────┐
-    ▼         ▼         ▼         ▼          ▼         ▼         ▼
-┌───────┐ ┌───────┐ ┌───────┐ ┌────────┐ ┌───────┐ ┌───────┐
-│ User  │ │Member │ │Workout│ │Facility│ │Chatbot│ │Payment│
-│ :6001 │ │ :6002 │ │ :6003 │ │ :6004  │ │ :6005 │ │ :6006 │
-└───────┘ └───────┘ └───────┘ └────────┘ └───────┘ └───────┘
-                            │         │         │
-                            └────┬────┴────┬────┘
-                                 ▼         ▼
+    ┌─────────┬─────────┬───┴─────┬──────────┬─────────┬─────────┬────────────┐
+    ▼         ▼         ▼         ▼          ▼         ▼         ▼            ▼
+┌───────┐ ┌───────┐ ┌───────┐ ┌────────┐ ┌───────┐ ┌───────┐ ┌──────────────┐
+│ User  │ │Member │ │Workout│ │Facility│ │Chatbot│ │Payment│ │Intelligence  │
+│ :6001 │ │ :6002 │ │ :6003 │ │ :6004  │ │ :6005 │ │ :6006 │ │    :6007     │
+└───────┘ └───────┘ └───────┘ └────────┘ └───────┘ └───────┘ └──────────────┘
+    │         │         │          │                   │
+    └─────────┴─────────┴──────────┴───────────────────┘
+                                 ▼
                          ┌──────────────────────┐
                          │      SQL Server      │
                          │   (DB layer dưới)    │
@@ -42,6 +42,7 @@ Smart Gym là hệ thống quản lý phòng tập gym thông minh với công n
 | facility_service   | 6004 | Thiết bị, khu vực, bảo trì             |
 | chatbot_service    | 6005 | AI chatbot tư vấn                         |
 | payment_service    | 6006 | Thanh toán QR VPBank                       |
+| intelligence_service | 6007 | Phân tích nghiệp vụ, insight, notification |
 | client             | 80   | Frontend tĩnh HTML/CSS/JS                   |
 | apigateway         | 80   | Nginx routing                               |
 
@@ -53,7 +54,14 @@ Smart Gym là hệ thống quản lý phòng tập gym thông minh với công n
 - `facility_service`
 - `payment_service`
 
-`chatbot_service` lấy ngữ cảnh từ các service trên, không truy cập SQL Server trực tiếp.
+`chatbot_service` và `intelligence_service` lấy ngữ cảnh từ các service trên, không truy cập SQL Server trực tiếp.
+
+## Hệ Thống Thông Minh
+
+- `intelligence_service` tổng hợp dữ liệu từ user, membership, workout và payment.
+- Customer dashboard hiển thị điểm thông minh, cảnh báo, gợi ý bài tập tiếp theo.
+- Admin có trang phân tích nghiệp vụ tại `/admin/intelligence`.
+- Service hỗ trợ gửi email qua SMTP/Gmail khi cấu hình `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`; nếu chưa cấu hình sẽ chạy ở chế độ preview.
 
 ## 🛠️ Công nghệ
 
@@ -102,6 +110,7 @@ docker_server/
 ├── facility_service/    # Equipment, areas
 ├── chatbot_service/     # AI chatbot
 ├── payment_service/      # Payment with VPBank
+├── intelligence_service/ # Business intelligence, notifications
 └── docker-compose.yml    # Docker compose config
 ```
 

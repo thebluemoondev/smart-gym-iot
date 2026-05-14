@@ -28,6 +28,9 @@ def create_user(user: schema.CreateUser, db: Session):
         password=hashed_pwd,
         name=user.name,
         phonenumber=user.phone,
+        email=user.email,
+        date_of_birth=user.date_of_birth,
+        gender=user.gender,
         avatar_url=user.avatar_url or DEFAULT_AVATAR_URL,
         role="user"
     )

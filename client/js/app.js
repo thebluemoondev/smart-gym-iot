@@ -104,6 +104,7 @@ function chatContextPills(context = {}) {
   if (context.planName) pills.push(`<span class="pill green">Plan: ${escapeHtml(context.planName)}</span>`)
   if (context.daysLeft !== null && context.daysLeft !== undefined) pills.push(`<span class="pill blue">${escapeHtml(String(context.daysLeft))} ngày còn lại</span>`)
   if (context.activePlanCount !== undefined) pills.push(`<span class="pill gold">${escapeHtml(String(context.activePlanCount))} plan</span>`)
+  if (context.smartScore !== undefined) pills.push(`<span class="pill green">Smart ${escapeHtml(String(context.smartScore))}/100</span>`)
   return pills.join('')
 }
 
@@ -113,6 +114,8 @@ function buildChatPrompt(baseMessage, context = {}) {
   if (context.planName) parts.push(`Kế hoạch gần nhất: ${context.planName}`)
   if (context.daysLeft !== null && context.daysLeft !== undefined) parts.push(`Số ngày còn lại: ${context.daysLeft}`)
   if (context.activePlanCount !== undefined) parts.push(`Số plan hiện có: ${context.activePlanCount}`)
+  if (context.smartScore !== undefined) parts.push(`Điểm thông minh: ${context.smartScore}/100`)
+  if (context.priorityNotice) parts.push(`Cảnh báo ưu tiên: ${context.priorityNotice}`)
   const contextLine = parts.length ? `Ngữ cảnh hệ thống: ${parts.join(' | ')}.` : ''
   return [contextLine, baseMessage].filter(Boolean).join('\n')
 }
@@ -213,6 +216,152 @@ function renderPlanPreviewCard(plan, exerciseLookup, options = {}) {
           `
   }).join('') : '<div class="muted">Kế hoạch chưa có chi tiết bài tập.</div>'}
         ${remainder > 0 ? `<button class="btn-ghost" type="button" data-open-full-plan="1">Mở full kế hoạch (${details.length} bài)</button>` : ''}
+      </div>
+    </div>
+  `
+}
+
+function severityPillClass(severity) {
+  const value = String(severity || '').toLowerCase()
+  if (value === 'critical') return 'red'
+  if (value === 'warning') return 'gold'
+  if (value === 'success') return 'green'
+  return 'blue'
+}
+
+function renderNotificationCards(items = [], emptyText = 'Chưa có cảnh báo nào.') {
+  const list = Array.isArray(items) ? items : []
+  if (!list.length) return `<div class="card" style="padding:16px;background:#f8fafc">${escapeHtml(emptyText)}</div>`
+  return list.map((item) => `
+    <div class="card" style="padding:16px;background:#fff;border:1px solid rgba(148,163,184,.14)">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+        <strong>${escapeHtml(item.title || 'Thông báo')}</strong>
+        <span class="pill ${severityPillClass(item.severity)}">${escapeHtml(item.severity || 'info')}</span>
+      </div>
+      <div class="muted" style="margin-top:8px">${escapeHtml(item.message || '')}</div>
+      ${item.action_path ? `<button class="btn-ghost" data-nav="${escapeAttr(item.action_path)}" style="margin-top:12px">${escapeHtml(item.action_label || 'Xem chi tiết')}</button>` : ''}
+    </div>
+  `).join('')
+}
+
+function renderCustomerSmartCenter(summary) {
+  if (!summary) {
+    return `
+      <div class="card plan-highlight" style="padding:22px;margin-bottom:24px">
+        <div class="pill blue">Smart Center</div>
+        <h3 style="margin-bottom:8px">Trung tâm thông minh</h3>
+        <p class="muted">Service phân tích chưa phản hồi. Dashboard vẫn dùng dữ liệu trực tiếp từ các service còn lại.</p>
+      </div>
+    `
+  }
+  const notifications = Array.isArray(summary.notifications) ? summary.notifications : []
+  const nextWorkout = Array.isArray(summary.workout?.next_workout) ? summary.workout.next_workout : []
+  const membership = summary.membership || {}
+  return `
+    <div class="card plan-highlight" style="padding:24px;margin-bottom:24px;background:linear-gradient(135deg,rgba(220,38,38,.08),rgba(34,197,94,.10))">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div class="pill green">Smart Center</div>
+          <h3 style="margin:10px 0 6px">Điểm thông minh: ${Number(summary.smart_score || 0)}/100</h3>
+          <p class="muted" style="margin:0">${escapeHtml(summary.smart_level || 'Đang phân tích')} • ${membership.active ? `Gói còn ${membership.days_left ?? 0} ngày` : 'Chưa có gói active'}</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-secondary" data-nav="/customer/notifications">Xem thông báo</button>
+          <button class="btn-ghost" data-nav="/customer/chatbot">Hỏi AI Coach</button>
+        </div>
+      </div>
+      <div class="grid two-col" style="margin-top:18px">
+        <div>
+          <strong>Cảnh báo ưu tiên</strong>
+          <div class="grid" style="margin-top:12px">
+            ${renderNotificationCards(notifications.slice(0, 3), 'Hồ sơ và gói tập đang ổn.')}
+          </div>
+        </div>
+        <div>
+          <strong>Bài nên tập tiếp theo</strong>
+          <div class="grid" style="margin-top:12px">
+            ${nextWorkout.slice(0, 3).map((item) => `
+              <div class="card" style="padding:14px;background:#f8fafc;border:1px solid rgba(148,163,184,.12)">
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+                  <strong>${escapeHtml(item.exercise_name || `Exercise #${item.exercise_id || ''}`)}</strong>
+                  <span class="pill blue">${escapeHtml(item.muscle_group || 'smart')}</span>
+                </div>
+                <div class="muted" style="margin-top:6px">${escapeHtml([item.sets ? `${item.sets} set` : null, item.reps ? `${item.reps} reps` : null, item.weight ? `${item.weight}kg` : null].filter(Boolean).join(' • ') || item.description || 'Gợi ý từ service phân tích')}</div>
+              </div>
+            `).join('') || '<div class="card" style="padding:16px;background:#f8fafc">Chưa đủ dữ liệu để đề xuất bài tập.</div>'}
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+}
+
+function renderAdminOverviewPanel(overview, expanded = false) {
+  if (!overview) {
+    return `
+      <div class="card plan-highlight" style="padding:22px;margin-top:24px">
+        <div class="pill blue">Business Intelligence</div>
+        <h3 style="margin-bottom:8px">Phân tích nghiệp vụ</h3>
+        <p class="muted">Intelligence Service chưa phản hồi. Kiểm tra container gym_intelligence_app nếu cần.</p>
+      </div>
+    `
+  }
+  const metrics = overview.metrics || {}
+  const insights = Array.isArray(overview.insights) ? overview.insights : []
+  const riskUsers = Array.isArray(overview.risk_users) ? overview.risk_users : []
+  const packageSales = Array.isArray(overview.package_sales) ? overview.package_sales : []
+  return `
+    <div class="card plan-highlight" style="padding:24px;margin-top:24px;background:linear-gradient(135deg,rgba(220,38,38,.08),rgba(34,197,94,.10))">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div class="pill green">Business Intelligence</div>
+          <h3 style="margin:10px 0 6px">Phân tích vận hành phòng gym</h3>
+          <p class="muted" style="margin:0">Tự tổng hợp hội viên, gói active, rủi ro hết hạn và thiếu kế hoạch.</p>
+        </div>
+        ${expanded ? '' : '<button class="btn-secondary" data-nav="/admin/intelligence">Mở trang phân tích</button>'}
+      </div>
+      <div class="grid four-col" style="margin-top:18px">
+        ${statCard(String(metrics.users ?? 0), 'Hội viên')}
+        ${statCard(String(metrics.active_members ?? 0), 'Đang active')}
+        ${statCard(String(metrics.expiring_soon ?? 0), 'Sắp hết hạn')}
+        ${statCard(`${Number(metrics.estimated_active_revenue || 0).toLocaleString()}đ`, 'Doanh thu active')}
+      </div>
+      <div class="grid ${expanded ? 'two-col' : 'three-col'}" style="margin-top:18px">
+        <div class="card" style="padding:18px;background:#fff">
+          <h3 style="margin-top:0">Insight</h3>
+          <div class="grid">
+            ${insights.map((item) => `
+              <div class="card" style="padding:14px;background:#f8fafc">
+                <span class="pill ${severityPillClass(item.severity)}">${escapeHtml(item.severity || 'info')}</span>
+                <strong style="display:block;margin-top:8px">${escapeHtml(item.title || '')}</strong>
+                <div class="muted" style="margin-top:6px">${escapeHtml(item.message || '')}</div>
+              </div>
+            `).join('') || '<div class="muted">Chưa có insight.</div>'}
+          </div>
+        </div>
+        <div class="card" style="padding:18px;background:#fff">
+          <h3 style="margin-top:0">User cần chăm sóc</h3>
+          <div class="grid">
+            ${riskUsers.slice(0, expanded ? 12 : 5).map((item) => `
+              <div class="card" style="padding:14px;background:#f8fafc">
+                <strong>${escapeHtml(item.name || `User #${item.user_id}`)}</strong>
+                <div class="muted" style="margin-top:6px">${escapeHtml(item.reason || '')}</div>
+                <button class="btn-ghost" data-nav="/admin/workout-plans?user_id=${escapeAttr(item.user_id || '')}" style="margin-top:10px">${escapeHtml(item.action || 'Xem')}</button>
+              </div>
+            `).join('') || '<div class="muted">Không có user rủi ro cao.</div>'}
+          </div>
+        </div>
+        <div class="card" style="padding:18px;background:#fff">
+          <h3 style="margin-top:0">Gói bán chạy</h3>
+          <div class="grid">
+            ${packageSales.slice(0, expanded ? 8 : 4).map((item) => `
+              <div class="card" style="padding:14px;background:#f8fafc">
+                <strong>${escapeHtml(item.name || `Gói #${item.package_id}`)}</strong>
+                <div class="muted" style="margin-top:6px">${Number(item.total_sales || 0)} lượt đăng ký • ${Number(item.active_sales || 0)} active</div>
+              </div>
+            `).join('') || '<div class="muted">Chưa có dữ liệu bán gói.</div>'}
+          </div>
+        </div>
       </div>
     </div>
   `
@@ -390,8 +539,10 @@ const routes = {
   '/customer/workout-plan': renderCustomerWorkoutPlan,
   '/customer/workout-plan/full': renderCustomerWorkoutPlanFull,
   '/customer/workout-history': renderCustomerWorkoutHistory,
+  '/customer/notifications': renderCustomerNotifications,
   '/customer/chatbot': renderCustomerChatbot,
   '/admin': renderAdminDashboard,
+  '/admin/intelligence': renderAdminIntelligence,
   '/admin/users': renderAdminUsers,
   '/admin/rfid': renderAdminRFID,
   '/admin/packages': renderAdminPackages,
@@ -465,6 +616,7 @@ function shellLayout(content, options = {}) {
     ['Bài tập', '/admin/exercises'],
     ['Kế hoạch', '/admin/workout-plans'],
     ['Lịch sử', '/admin/workout-history'],
+    ['Phân tích', '/admin/intelligence'],
     ['Thiết bị', '/admin/equipment'],
     ['Bảo trì', '/admin/maintenance'],
     ['Khu vực', '/admin/areas'],
@@ -475,6 +627,7 @@ function shellLayout(content, options = {}) {
     ['Gói tập', '/customer/subscription'],
     ['Kế hoạch', '/customer/workout-plan'],
     ['Lịch sử', '/customer/workout-history'],
+    ['Thông báo', '/customer/notifications'],
     ['AI Hỗ trợ', '/customer/chatbot']
   ]
 
@@ -741,6 +894,7 @@ async function renderCustomerDashboard() {
     user?.id ? api(`/api/workout/plans/user/${user.id}`).catch(() => []) : Promise.resolve([]),
     api('/api/workout/exercises').catch(() => [])
   ])
+  const intelligence = user?.id ? await api(`/api/intelligence/user/${user.id}/summary`).catch(() => null) : null
   const latestActive = Array.isArray(activeSub)
     ? [...activeSub].sort((a, b) => Number(b.id || 0) - Number(a.id || 0)).find((item) => String(item.status || '').toLowerCase() === 'active')
     : activeSub
@@ -794,6 +948,7 @@ async function renderCustomerDashboard() {
           ${statCard(`${progress}%`, 'Tiến độ gói')}
           ${statCard(statusLabel, 'Trạng thái')}
         </div>
+        ${renderCustomerSmartCenter(intelligence)}
         <div class="grid two-col">
               <div class="card plan-highlight" style="padding:24px">
             <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -906,7 +1061,7 @@ function renderCustomerProfile() {
             <div class="muted" style="margin-top:6px">Hãy sửa tên, email, số điện thoại và ngày sinh. Hệ thống sẽ lưu ngay khi bấm Lưu thay đổi.</div>
           </div>
           <form id="profile-form" class="grid two-col" style="margin-top:20px">
-            <input class="input" name="full_name" placeholder="Họ và tên" value="${escapeAttr(user.full_name || user.name || '')}" />
+            <input class="input" name="name" placeholder="Họ và tên" value="${escapeAttr(user.name || user.full_name || '')}" />
             <input class="input" name="email" placeholder="Email" value="${escapeAttr(user.email || '')}" />
             <input class="input" name="phone" placeholder="Số điện thoại" value="${escapeAttr(phone)}" />
             <input class="input" name="date_of_birth" type="date" value="${escapeAttr(user.date_of_birth || '')}" />
@@ -1212,6 +1367,61 @@ async function renderCustomerWorkoutHistory() {
   `)
 }
 
+async function renderCustomerNotifications() {
+  const user = state.user || {}
+  const summary = user.id ? await api(`/api/intelligence/user/${user.id}/summary`).catch(() => null) : null
+  const notifications = Array.isArray(summary?.notifications) ? summary.notifications : []
+  const recommendations = Array.isArray(summary?.recommendations) ? summary.recommendations : []
+  const nextWorkout = Array.isArray(summary?.workout?.next_workout) ? summary.workout.next_workout : []
+  return shellLayout(`
+    <section class="section" style="padding-top:24px">
+      <div class="container">
+        <div class="card plan-highlight" style="padding:28px;background:linear-gradient(135deg,rgba(220,38,38,.08),rgba(34,197,94,.10))">
+          <div class="pill green">Smart Notification</div>
+          <h1 style="margin-bottom:8px">Thông báo thông minh</h1>
+          <p class="muted" style="margin:0">Các cảnh báo và gợi ý được tạo từ Intelligence Service theo dữ liệu thật của bạn.</p>
+        </div>
+        <div class="grid four-col" style="margin-top:24px">
+          ${statCard(String(summary?.smart_score ?? 0), 'Điểm thông minh')}
+          ${statCard(String(summary?.membership?.days_left ?? 0), 'Ngày còn gói')}
+          ${statCard(String(summary?.workout?.plan_count ?? 0), 'Kế hoạch')}
+          ${statCard(String(summary?.workout?.history_count ?? 0), 'Lịch sử tập')}
+        </div>
+        <div class="grid two-col" style="margin-top:24px">
+          <div class="card" style="padding:24px">
+            <h3>Cảnh báo ưu tiên</h3>
+            <div class="grid" style="margin-top:16px">${renderNotificationCards(notifications, 'Không có cảnh báo mới.')}</div>
+          </div>
+          <div class="card" style="padding:24px">
+            <h3>Đề xuất hành động</h3>
+            <div class="grid" style="margin-top:16px">
+              ${recommendations.map((item) => `
+                <div class="card" style="padding:16px;background:#f8fafc">
+                  <strong>${escapeHtml(item.title || 'Gợi ý')}</strong>
+                  <div class="muted" style="margin-top:8px">${escapeHtml(item.message || '')}</div>
+                  ${item.action_path ? `<button class="btn-ghost" data-nav="${escapeAttr(item.action_path)}" style="margin-top:12px">${escapeHtml(item.action_label || 'Thực hiện')}</button>` : ''}
+                </div>
+              `).join('') || '<div class="muted">Chưa có đề xuất.</div>'}
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:24px;margin-top:24px">
+          <h3>Bài tập nên thực hiện tiếp theo</h3>
+          <div class="grid three-col" style="margin-top:16px">
+            ${nextWorkout.map((item) => `
+              <div class="card" style="padding:16px;background:#f8fafc">
+                <span class="pill blue">${escapeHtml(item.muscle_group || 'smart')}</span>
+                <strong style="display:block;margin-top:10px">${escapeHtml(item.exercise_name || `Exercise #${item.exercise_id || ''}`)}</strong>
+                <div class="muted" style="margin-top:8px">${escapeHtml([item.sets ? `${item.sets} set` : null, item.reps ? `${item.reps} reps` : null, item.weight ? `${item.weight}kg` : null].filter(Boolean).join(' • ') || item.description || 'Đề xuất từ hệ thống')}</div>
+              </div>
+            `).join('') || '<div class="muted">Chưa đủ dữ liệu để đề xuất bài tập.</div>'}
+          </div>
+        </div>
+      </div>
+    </section>
+  `)
+}
+
 async function renderCustomerChatbot() {
   const user = state.user || {}
   const [subscriptions, plans, packages] = await Promise.all([
@@ -1219,6 +1429,7 @@ async function renderCustomerChatbot() {
     user.id ? api(`/api/workout/plans/user/${user.id}`).catch(() => []) : Promise.resolve([]),
     loadPackages()
   ])
+  const intelligence = user.id ? await api(`/api/intelligence/user/${user.id}/summary`).catch(() => null) : null
   const activeSub = Array.isArray(subscriptions)
     ? [...subscriptions].sort((a, b) => Number(b.id || 0) - Number(a.id || 0)).find((item) => String(item.status || '').toLowerCase() === 'active')
     : null
@@ -1234,7 +1445,11 @@ async function renderCustomerChatbot() {
     packageName: activePackage?.name || '',
     planName: latestPlan?.name || '',
     daysLeft,
-    activePlanCount: Array.isArray(plans) ? plans.length : 0
+    activePlanCount: Array.isArray(plans) ? plans.length : 0,
+    smartScore: intelligence?.smart_score,
+    priorityNotice: Array.isArray(intelligence?.notifications) && intelligence.notifications[0]
+      ? intelligence.notifications[0].message
+      : ''
   }
   state.customerChatContext = chatContext
   state.customerChatKey = chatStorageKey('customer', user.id)
@@ -1751,7 +1966,8 @@ function packageCard(pkg, loggedIn, customerMode) {
   `
 }
 
-function renderAdminDashboard() {
+async function renderAdminDashboard() {
+  const overview = await api('/api/intelligence/admin/overview').catch(() => null)
   return shellLayout(`
     <div class="grid two-col">
       <div class="card" style="padding:28px">
@@ -1774,6 +1990,7 @@ function renderAdminDashboard() {
           <button class="btn-ghost" data-nav="/admin/maintenance">Bảo trì</button>
           <button class="btn-ghost" data-nav="/admin/areas">Khu vực</button>
           <button class="btn-ghost" data-nav="/admin/workout-plans">Kế hoạch</button>
+          <button class="btn-ghost" data-nav="/admin/intelligence">Phân tích</button>
           <button class="btn-ghost" data-nav="/admin/workout-history">Lịch sử</button>
           <button class="btn-ghost" data-nav="/admin/chatbot">AI Chatbot</button>
         </div>
@@ -1782,7 +1999,21 @@ function renderAdminDashboard() {
           <div class="muted" style="margin-top:6px">Vào Kế hoạch hoặc Lịch sử rồi nhập "user_id" để tra cứu hội viên cụ thể.</div>
         </div>
       </div>
-    </div>`, { title: 'Tổng quan quản trị' })
+    </div>
+    ${renderAdminOverviewPanel(overview)}
+    `, { title: 'Tổng quan quản trị' })
+}
+
+async function renderAdminIntelligence() {
+  const overview = await api('/api/intelligence/admin/overview').catch(() => null)
+  return shellLayout(`
+    <div class="card" style="padding:28px">
+      <div class="pill green">Smart Business</div>
+      <h1 style="margin-bottom:8px">Phân tích nghiệp vụ</h1>
+      <p class="muted" style="margin:0">Service này đọc dữ liệu từ hội viên, đăng ký gói và kế hoạch tập để tạo insight cho admin.</p>
+    </div>
+    ${renderAdminOverviewPanel(overview, true)}
+  `, { title: 'Phân tích thông minh' })
 }
 
 function miniStat(title, desc) {
@@ -1836,7 +2067,10 @@ function bindGlobalActions() {
     e.preventDefault()
     try {
       const payload = Object.fromEntries(new FormData(profileForm).entries())
-      await api(`/api/users/user/profile/${state.user?.id}`, { method: 'PUT', body: JSON.stringify(payload) })
+      Object.keys(payload).forEach((key) => {
+        if (payload[key] === '') delete payload[key]
+      })
+      await api(`/api/users/${state.user?.id}`, { method: 'PUT', body: JSON.stringify(payload) })
       state.user = normalizeUser({ ...state.user, ...payload })
       localStorage.setItem('gym_user', JSON.stringify(state.user))
       showToast('Đã lưu hồ sơ.', 'success')

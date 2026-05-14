@@ -9,6 +9,7 @@
 - Facility: `/api/facility`
 - Chatbot: `/api/chatbot`
 - Payment: `/api/payment`
+- Intelligence: `/api/intelligence`
 
 ## Frontend Routes
 
@@ -22,8 +23,10 @@
 - `/customer/workout-plan`
 - `/customer/workout-plan/full`
 - `/customer/workout-history`
+- `/customer/notifications`
 - `/customer/chatbot`
 - `/admin`
+- `/admin/intelligence`
 
 ## Service Docs
 
@@ -33,3 +36,4 @@
 - [facility_service/API_ENDPOINTS.md](facility_service/API_ENDPOINTS.md)
 - [chatbot_service/API_ENDPOINTS.md](chatbot_service/API_ENDPOINTS.md)
 - [payment_service/API_ENDPOINTS.md](payment_service/API_ENDPOINTS.md)
+- [intelligence_service/API_ENDPOINTS.md](intelligence_service/API_ENDPOINTS.md)

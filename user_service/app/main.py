@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.db.database import test_connection
+from sqlalchemy import text
+from app.db.database import engine, test_connection
 from app.api.v1.router import api_router
 
 app = FastAPI(
@@ -32,6 +33,21 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     test_connection()
+    ensure_user_profile_columns()
+
+
+def ensure_user_profile_columns():
+    statements = [
+        "IF COL_LENGTH('users', 'email') IS NULL ALTER TABLE users ADD email VARCHAR(255) NULL",
+        "IF COL_LENGTH('users', 'date_of_birth') IS NULL ALTER TABLE users ADD date_of_birth DATE NULL",
+        "IF COL_LENGTH('users', 'gender') IS NULL ALTER TABLE users ADD gender VARCHAR(20) NULL",
+    ]
+    try:
+        with engine.begin() as conn:
+            for statement in statements:
+                conn.execute(text(statement))
+    except Exception as exc:
+        print("Không thể đảm bảo cột hồ sơ user:", exc)
 
 app.include_router(api_router, prefix="/api/v1")
 

@@ -6,7 +6,7 @@ Module User Model
 
 from app.db.database import Base
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Unicode, DateTime, func
+from sqlalchemy import Column, Date, Integer, String, Unicode, DateTime, func
 
 
 class User(Base):
@@ -19,6 +19,9 @@ class User(Base):
     username = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     phonenumber = Column(String(20), nullable=True)
+    email = Column(String(255), nullable=True)
+    date_of_birth = Column(Date, nullable=True)
+    gender = Column(String(20), nullable=True)
     avatar_url = Column(String(500), nullable=True)
     role = Column(String(10), default='user')
     created_at = Column(DateTime, server_default=func.now(), nullable=False)

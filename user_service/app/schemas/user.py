@@ -5,7 +5,7 @@ Module User Schema
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional
-from datetime import datetime
+from datetime import date, datetime
 import re
 
 
@@ -13,6 +13,9 @@ class UserBase(BaseModel):
     name: Optional[str] = Field(default=None, min_length=2, max_length=255)
     username: str = Field(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9._-]+$")
     phone: Optional[str] = Field(default=None, min_length=8, max_length=15)
+    email: Optional[str] = Field(default=None, max_length=255)
+    date_of_birth: Optional[date] = None
+    gender: Optional[str] = Field(default=None, max_length=20)
     avatar_url: Optional[str] = Field(default=None, max_length=500)
 
     @field_validator("name")
@@ -54,6 +57,9 @@ class UpdateUser(BaseModel):
     name: Optional[str] = Field(default=None, min_length=2, max_length=255)
     password: Optional[str] = Field(default=None, min_length=6, max_length=128)
     phone: Optional[str] = Field(default=None, min_length=8, max_length=15)
+    email: Optional[str] = Field(default=None, max_length=255)
+    date_of_birth: Optional[date] = None
+    gender: Optional[str] = Field(default=None, max_length=20)
     avatar_url: Optional[str] = Field(default=None, max_length=500)
 
     @field_validator("name")
@@ -87,6 +93,9 @@ class UserOut(BaseModel):
     name: Optional[str] = None
     username: str
     phone: Optional[str] = Field(default=None, alias="phonenumber")
+    email: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    gender: Optional[str] = None
     avatar_url: Optional[str] = None
     role: str = "user"
     created_at: Optional[datetime] = None
