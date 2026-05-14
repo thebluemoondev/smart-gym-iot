@@ -1,5 +1,7 @@
 # Smart Gym - Hệ thống quản lý phòng tập thông minh
 
+> Khi mở lại dự án, đọc [PROJECT_STATE.md](./PROJECT_STATE.md) trước rồi xem [WORKLOG.md](./WORKLOG.md). Hai file này là snapshot nhanh của hệ thống và tiến trình làm việc gần nhất.
+
 ## 📋 Giới thiệu
 
 Smart Gym là hệ thống quản lý phòng tập gym thông minh với công nghệ AI, tích hợp đầy đủ các chức năng từ quản lý người dùng, gói tập, sản phẩm, thiết bị đến thanh toán.
