@@ -921,6 +921,7 @@ async function renderCustomerDashboard() {
   const quickActions = [
     { label: 'Xem gói tập', path: '/packages', tone: 'primary' },
     { label: 'Kế hoạch hôm nay', path: '/customer/workout-plan', tone: 'secondary' },
+    { label: 'Lịch sử đã tập', path: '/customer/workout-history', tone: 'ghost' },
     { label: 'AI Coach', path: '/customer/chatbot', tone: 'ghost' },
     { label: 'Thông tin cá nhân', path: '/customer/profile', tone: 'ghost' }
   ]
