@@ -63,6 +63,7 @@ Smart Gym là hệ thống quản lý phòng tập gym thông minh với công n
 - Admin có trang phân tích nghiệp vụ tại `/admin/intelligence`.
 - Sau khi user hoàn tất tác vụ như đăng ký gói, tạo kế hoạch tập, cập nhật hồ sơ hoặc thanh toán thành công, hệ thống sẽ gửi Gmail nếu user đã có `email`.
 - Service hỗ trợ gửi email qua SMTP/Gmail khi cấu hình `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`; nếu chưa cấu hình sẽ chạy ở chế độ preview.
+- Với Gmail thật, hãy dùng `SMTP_USERNAME` và `SMTP_FROM` là cùng một địa chỉ, `SMTP_PASSWORD` phải là Gmail App Password.
 
 ## 🛠️ Công nghệ
 

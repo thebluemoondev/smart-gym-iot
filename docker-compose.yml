@@ -96,6 +96,11 @@ services:
       - MEMBERSHIP_SERVICE_URL=http://membership_service:6002/api/v1
       - WORKOUT_SERVICE_URL=http://workout_service:6003/api/v1/workout
       - PAYMENT_SERVICE_URL=http://payment_service:6006/api/v1/payment
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=
+      - SMTP_PASSWORD=
+      - SMTP_FROM=
     networks:
       - gym_network
     depends_on:
