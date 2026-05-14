@@ -3,7 +3,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
+client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 def get_ai_response(user_question: str, gym_context: dict):
     name = gym_context.get("user_name")
@@ -31,6 +32,15 @@ PHONG CÁCH CỦA BẠN:
    - Anh Thành (0356741686)
 """
 
+    if client is None:
+        return (
+            f"Chào {name}! Hiện AI đang ở chế độ dự phòng vì chưa cấu hình GROQ_API_KEY. "
+            f"Bạn đang ở trạng thái: {membership}. "
+            f"Gợi ý nhanh: nếu muốn tập nhẹ hôm nay, hãy bắt đầu bằng khởi động 5-10 phút, "
+            f"3 hiệp plank, 3 hiệp squat và 2-3 bài core cơ bản. "
+            f"Thanh Chinh Fitness Team"
+        )
+
     try:
         chat_completion = client.chat.completions.create(
             messages=[
@@ -42,4 +52,8 @@ PHONG CÁCH CỦA BẠN:
         )
         return chat_completion.choices[0].message.content
     except Exception as e:
-        return f"Hic, não bộ AI của mình bị căng cơ rồi! Đợi mình xíu nha. (Lỗi: {str(e)})"
+        return (
+            f"Hic, não bộ AI của mình bị căng cơ rồi! Để mình gợi ý nhanh trước nhé: "
+            f"hãy ưu tiên khởi động nhẹ, tập 2-3 nhóm cơ chính và uống đủ nước. "
+            f"(Lỗi: {str(e)})"
+        )

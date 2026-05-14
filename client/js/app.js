@@ -1458,17 +1458,28 @@ async function renderAdminExercises() {
 }
 
 async function renderAdminWorkoutPlans() {
-  const plans = await api('/api/workout/plans/user/' + (state.user?.id || 0)).catch(() => [])
+  const query = new URLSearchParams(location.search)
+  const selectedUserId = query.get('user_id') || state.user?.id || ''
+  const plans = selectedUserId ? await api('/api/workout/plans/user/' + selectedUserId).catch(() => []) : []
   return shellLayout(`
     <section class="section" style="padding-top:24px">
       <div class="container">
         <div class="card" style="padding:28px">
           <h1>Kế hoạch tập</h1>
+          <form class="grid two-col" style="margin-top:16px" id="admin-plan-filter-form">
+            <input class="input" name="user_id" type="number" placeholder="Nhập user_id để xem kế hoạch" value="${escapeAttr(selectedUserId)}" />
+            <button class="btn-secondary" type="submit">Xem kế hoạch</button>
+          </form>
+          <div class="card plan-highlight" style="margin-top:16px;padding:14px">
+            <strong>Chế độ quản trị</strong>
+            <div class="muted" style="margin-top:6px">Nhập "user_id" để xem toàn bộ kế hoạch của hội viên tương ứng.</div>
+          </div>
           <div class="grid" style="margin-top:16px">
             ${(Array.isArray(plans) ? plans : []).map(plan => `
               <div class="card" style="padding:14px;background:#f8fafc">
                 <strong>${escapeHtml(plan.name || 'Plan')}</strong>
                 <div class="muted">ID: ${plan.id}</div>
+                <div class="muted">${escapeHtml((plan.created_at || '').slice(0, 10))}</div>
               </div>`).join('') || '<div class="muted">Chưa có dữ liệu.</div>'}
           </div>
         </div>
@@ -1476,12 +1487,22 @@ async function renderAdminWorkoutPlans() {
     </section>`, { title: 'Kế hoạch' })
 }
 async function renderAdminWorkoutHistory() {
-  const history = await api('/api/workout/history/user/' + (state.user?.id || 0)).catch(() => [])
+  const query = new URLSearchParams(location.search)
+  const selectedUserId = query.get('user_id') || state.user?.id || ''
+  const history = selectedUserId ? await api('/api/workout/history/user/' + selectedUserId).catch(() => []) : []
   return shellLayout(`
     <section class="section" style="padding-top:24px">
       <div class="container">
         <div class="card" style="padding:28px">
           <h1>Lịch sử tập</h1>
+          <form class="grid two-col" style="margin-top:16px" id="admin-history-filter-form">
+            <input class="input" name="user_id" type="number" placeholder="Nhập user_id để xem lịch sử" value="${escapeAttr(selectedUserId)}" />
+            <button class="btn-secondary" type="submit">Xem lịch sử</button>
+          </form>
+          <div class="card plan-highlight" style="margin-top:16px;padding:14px">
+            <strong>Chế độ quản trị</strong>
+            <div class="muted" style="margin-top:6px">Nhập "user_id" để xem lịch sử tập của hội viên tương ứng.</div>
+          </div>
           <div class="grid" style="margin-top:16px">
             ${(Array.isArray(history) ? history : []).map(item => `
               <div class="card" style="padding:14px;background:#f8fafc">
@@ -1735,10 +1756,21 @@ function renderAdminDashboard() {
       </div>
       <div class="card" style="padding:28px">
         <h3>Tác vụ nhanh</h3>
-        <div class="grid" style="margin-top:16px">
-          <button class="btn-primary" data-nav="/admin/users">Quản lý hội viên</button>
-          <button class="btn-secondary" data-nav="/admin/packages">Quản lý gói tập</button>
-          <button class="btn-ghost" data-nav="/admin/chatbot">Mở AI Chatbot</button>
+        <div class="grid two-col" style="margin-top:16px">
+          <button class="btn-primary" data-nav="/admin/users">Hội viên</button>
+          <button class="btn-secondary" data-nav="/admin/subscriptions">Đăng ký</button>
+          <button class="btn-ghost" data-nav="/admin/packages">Gói tập</button>
+          <button class="btn-ghost" data-nav="/admin/exercises">Bài tập</button>
+          <button class="btn-ghost" data-nav="/admin/equipment">Thiết bị</button>
+          <button class="btn-ghost" data-nav="/admin/maintenance">Bảo trì</button>
+          <button class="btn-ghost" data-nav="/admin/areas">Khu vực</button>
+          <button class="btn-ghost" data-nav="/admin/workout-plans">Kế hoạch</button>
+          <button class="btn-ghost" data-nav="/admin/workout-history">Lịch sử</button>
+          <button class="btn-ghost" data-nav="/admin/chatbot">AI Chatbot</button>
+        </div>
+        <div class="card plan-highlight" style="margin-top:18px;padding:16px">
+          <strong>Hướng dẫn quản trị nhanh</strong>
+          <div class="muted" style="margin-top:6px">Vào Kế hoạch hoặc Lịch sử rồi nhập "user_id" để tra cứu hội viên cụ thể.</div>
         </div>
       </div>
     </div>`, { title: 'Tổng quan quản trị' })
@@ -2153,6 +2185,20 @@ function bindGlobalActions() {
     } catch (err) {
       showToast(err.message, 'error')
     }
+  }
+  const adminPlanFilterForm = document.getElementById('admin-plan-filter-form')
+  if (adminPlanFilterForm) adminPlanFilterForm.onsubmit = (e) => {
+    e.preventDefault()
+    const form = Object.fromEntries(new FormData(adminPlanFilterForm).entries())
+    const userId = String(form.user_id || '').trim()
+    navigate(userId ? `/admin/workout-plans?user_id=${encodeURIComponent(userId)}` : '/admin/workout-plans')
+  }
+  const adminHistoryFilterForm = document.getElementById('admin-history-filter-form')
+  if (adminHistoryFilterForm) adminHistoryFilterForm.onsubmit = (e) => {
+    e.preventDefault()
+    const form = Object.fromEntries(new FormData(adminHistoryFilterForm).entries())
+    const userId = String(form.user_id || '').trim()
+    navigate(userId ? `/admin/workout-history?user_id=${encodeURIComponent(userId)}` : '/admin/workout-history')
   }
   const subscribeConfirmBtn = document.querySelector('[data-subscribe-package-id]')
   if (subscribeConfirmBtn) {
