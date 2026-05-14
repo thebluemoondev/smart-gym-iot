@@ -42,7 +42,7 @@ Trả về:
 - Gói sắp hết hạn
 - User chưa có kế hoạch
 - Gói bán chạy
-- User cần chăm sóc
+- User ưu tiên
 
 ## Email Notification
 

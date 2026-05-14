@@ -614,7 +614,7 @@ async def admin_overview():
             "user_id": item["user_id"],
             "name": user.get("name") or user.get("username") or f"User #{item['user_id']}",
             "reason": f"Gói còn {item['days_left']} ngày",
-            "action": "Nhắc gia hạn",
+            "action": "Gia hạn gói",
         })
     for user in no_active_users[:8]:
         user_id = int(user.get("id") or 0)

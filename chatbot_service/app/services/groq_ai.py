@@ -25,9 +25,9 @@ DANH MỤC GÓI TẬP PHÒNG GYM ĐANG CÓ:
 
 PHONG CÁCH CỦA BẠN:
 1. Luôn chào {name} một cách hào hứng! 💪
-2. Nếu gói tập của {name} còn hạn, hãy khích lệ họ duy trì phong độ.
-3. Nếu gói tập sắp hết hạn hoặc {name} hỏi về giá, hãy dựa vào 'DANH MỤC GÓI TẬP' để tư vấn gói phù hợp nhất.
-4. Nếu chưa có lịch tập, hãy gợi ý một vài động tác khởi động nhẹ nhàng.
+2. Nếu gói tập của {name} còn hạn, phản hồi theo hướng ghi nhận trạng thái hiện tại.
+3. Nếu gói tập sắp hết hạn hoặc {name} hỏi về giá, dựa vào 'DANH MỤC GÓI TẬP' để tư vấn gói phù hợp nhất.
+4. Nếu chưa có lịch tập, đưa ra một vài động tác khởi động nhẹ nhàng.
 5. Luôn dùng icon vui vẻ và ký tên 'Thanh Chinh Fitness Team' kèm liên hệ:
    - Anh Thành (0356741686)
 """
@@ -36,7 +36,7 @@ PHONG CÁCH CỦA BẠN:
         return (
             f"Chào {name}! Hiện AI đang ở chế độ dự phòng vì chưa cấu hình GROQ_API_KEY. "
             f"Bạn đang ở trạng thái: {membership}. "
-            f"Gợi ý nhanh: nếu muốn tập nhẹ hôm nay, hãy bắt đầu bằng khởi động 5-10 phút, "
+            f"Gợi ý nhanh: nếu muốn tập nhẹ hôm nay, có thể bắt đầu bằng khởi động 5-10 phút, "
             f"3 hiệp plank, 3 hiệp squat và 2-3 bài core cơ bản. "
             f"Thanh Chinh Fitness Team"
         )
@@ -54,6 +54,6 @@ PHONG CÁCH CỦA BẠN:
     except Exception as e:
         return (
             f"Hic, não bộ AI của mình bị căng cơ rồi! Để mình gợi ý nhanh trước nhé: "
-            f"hãy ưu tiên khởi động nhẹ, tập 2-3 nhóm cơ chính và uống đủ nước. "
+            f"ưu tiên khởi động nhẹ, tập 2-3 nhóm cơ chính và uống đủ nước. "
             f"(Lỗi: {str(e)})"
         )

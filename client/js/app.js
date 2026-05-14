@@ -94,7 +94,7 @@ function renderChatMessages(targetId, history = []) {
         <div style="white-space:pre-wrap;line-height:1.7">${escapeHtml(msg.text || '')}</div>
       </div>
     `
-  }).join('') : '<div class="muted">Chưa có câu hỏi nào. Hãy bắt đầu cuộc trò chuyện để được tư vấn.</div>'
+  }).join('') : '<div class="muted">Chưa có câu hỏi nào. Bắt đầu cuộc trò chuyện để xem phản hồi.</div>'
   el.scrollTop = el.scrollHeight
 }
 
@@ -340,7 +340,7 @@ function renderAdminOverviewPanel(overview, expanded = false) {
           </div>
         </div>
         <div class="card" style="padding:18px;background:#fff">
-          <h3 style="margin-top:0">User cần chăm sóc</h3>
+          <h3 style="margin-top:0">User ưu tiên</h3>
           <div class="grid">
             ${riskUsers.slice(0, expanded ? 12 : 5).map((item) => `
               <div class="card" style="padding:14px;background:#f8fafc">
@@ -960,7 +960,7 @@ async function renderCustomerDashboard() {
             <div style="margin-top:16px">
               ${latestPlan ? renderPlanPreviewCard(latestPlan, exerciseLookup, { label: 'Kế hoạch mới nhất', emptyText: 'Chưa có kế hoạch.' }) : `
                 <div class="card" style="padding:18px;background:#f8fafc;border:1px solid rgba(148,163,184,.12)">
-                  <div class="muted">Chưa có kế hoạch nào. Hãy tạo trong menu Kế hoạch tập luyện.</div>
+                  <div class="muted">Chưa có kế hoạch nào. Tạo kế hoạch trong menu Kế hoạch tập luyện.</div>
                 </div>
               `}
             </div>
@@ -1059,7 +1059,7 @@ function renderCustomerProfile() {
           </div>
           <div class="card plan-highlight" style="margin-top:12px;padding:16px">
             <strong>Cập nhật thông tin</strong>
-            <div class="muted" style="margin-top:6px">Hãy sửa tên, email, số điện thoại và ngày sinh. Hệ thống sẽ lưu ngay khi bấm Lưu thay đổi.</div>
+            <div class="muted" style="margin-top:6px">Sửa tên, email, số điện thoại và ngày sinh. Hệ thống sẽ lưu ngay khi bấm Lưu thay đổi.</div>
           </div>
           <form id="profile-form" class="grid two-col" style="margin-top:20px">
             <input class="input" name="name" placeholder="Họ và tên" value="${escapeAttr(user.name || user.full_name || '')}" />
@@ -1124,7 +1124,7 @@ async function renderCustomerWorkoutPlan() {
               <strong>Gợi ý khung kế hoạch</strong>
               <span class="pill gold">AI Draft</span>
             </div>
-            <div class="muted" style="margin-top:8px">Dùng nhóm bài gợi ý bên dưới để lên kế hoạch nhanh hơn. Bạn có thể thêm/xóa từng dòng.</div>
+            <div class="muted" style="margin-top:8px">Dùng nhóm bài gợi ý bên dưới để lên kế hoạch nhanh hơn. Có thể thêm/xóa từng dòng.</div>
             <div class="grid" style="margin-top:14px">
               ${templatePlan.slice(0, 4).map((ex, idx) => `
                 <div class="card" style="padding:12px;background:#fff;border:1px solid rgba(148,163,184,.12)">
@@ -1156,7 +1156,7 @@ async function renderCustomerWorkoutPlan() {
           <div class="card" style="padding:16px;background:linear-gradient(90deg,rgba(220,38,38,.08),rgba(34,197,94,.08));margin-bottom:16px">
             <strong>Trợ lý lập kế hoạch</strong>
             <div class="muted" style="margin-top:6px">
-              Hãy chọn 1 bài chính, 1 bài phụ, 1 bài core. Sau đó nhập set/reps/tạ để hệ thống sinh kế hoạch rõ ràng hơn.
+              Chọn 1 bài chính, 1 bài phụ, 1 bài core. Sau đó nhập set/reps/tạ để hệ thống sinh kế hoạch rõ ràng hơn.
             </div>
           </div>
           <div class="grid" style="margin-top:16px">
@@ -1479,7 +1479,7 @@ async function renderCustomerChatbot() {
           </form>
           <div class="grid" style="margin-top:18px">
             <button class="btn-secondary" type="button" data-chat-quick="Hôm nay nên tập gì theo gói hiện tại?">Hôm nay nên tập gì?</button>
-            <button class="btn-ghost" type="button" data-chat-quick="Hãy đề xuất kế hoạch cho tôi dựa trên gói tập hiện tại và bài tập sẵn có.">Đề xuất kế hoạch thông minh</button>
+            <button class="btn-ghost" type="button" data-chat-quick="Đề xuất kế hoạch cho tôi dựa trên gói tập hiện tại và bài tập sẵn có.">Đề xuất kế hoạch thông minh</button>
             <button class="btn-ghost" type="button" data-chat-quick="Gói của tôi còn bao nhiêu ngày và có nên gia hạn không?">Gia hạn gói?</button>
           </div>
         </div>
@@ -1490,13 +1490,13 @@ async function renderCustomerChatbot() {
 
 function customerChatGreeting() {
   return [
-    { role: 'assistant', text: 'Chào bạn, tôi có thể tư vấn kế hoạch tập, gói tập hoặc lịch tập cho hôm nay. Hãy hỏi ngắn gọn và tôi sẽ trả lời theo từng bước.' }
+    { role: 'assistant', text: 'Chào bạn, tôi có thể tư vấn kế hoạch tập, gói tập hoặc lịch tập cho hôm nay. Gửi câu hỏi ngắn gọn và tôi sẽ trả lời theo từng bước.' }
   ]
 }
 
 function adminChatGreeting() {
   return [
-    { role: 'assistant', text: 'Chế độ quản trị. Hãy hỏi về gói tập, hội viên, đăng ký hoặc tình trạng hệ thống.' }
+    { role: 'assistant', text: 'Chế độ quản trị. Gửi câu hỏi về gói tập, hội viên, đăng ký hoặc tình trạng hệ thống.' }
   ]
 }
 
@@ -2221,7 +2221,7 @@ function bindGlobalActions() {
     try {
       const form = Object.fromEntries(new FormData(workoutPlanForm).entries())
       const details = collectPlanRows()
-      if (!details.length) throw new Error('Hãy chọn ít nhất một bài tập.')
+      if (!details.length) throw new Error('Chọn ít nhất một bài tập.')
       const createdPlan = await api('/api/workout/plans', {
         method: 'POST',
         body: JSON.stringify({
